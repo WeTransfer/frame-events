@@ -10,14 +10,76 @@ import { FrameEvent, InitialFrameEvent, ParentFrameOptions } from "./types";
  * @class ParentFrame
  */
 export default class ParentFrame {
+  /**
+   * A reference to the child frame
+   *
+   * @type {HTMLIFrameElement}
+   * @memberof ParentFrame
+   */
   readonly child: HTMLIFrameElement;
+
+  /**
+   * The URL of the creative
+   *
+   * @type {URL}
+   * @memberof ParentFrame
+   */
   readonly creativeUrl: URL;
+
+  /**
+   * The origin of the parent
+   *
+   * @type {string}
+   * @memberof ParentFrame
+   */
   readonly origin: string;
+
+  /**
+   * A list of listeners
+   *
+   * @type {(string[] | null)}
+   * @memberof ParentFrame
+   */
   readonly listeners: string[] | null;
+
+  /**
+   * A list of methods
+   *
+   * @type {string[]}
+   * @memberof ParentFrame
+   */
   readonly methods: string[];
+
+  /**
+   * A list of scripts
+   *
+   * @type {string[]}
+   * @memberof ParentFrame
+   */
   readonly scripts?: string[];
+
+  /**
+   * The name of the placement
+   *
+   * @type {string}
+   * @memberof ParentFrame
+   */
   readonly placement: string;
+
+  /**
+   * A list of events
+   *
+   * @type {unknown[]}
+   * @memberof ParentFrame
+   */
   readonly events: unknown[] = [];
+
+  /**
+   * An event emitter
+   *
+   * @type {Events}
+   * @memberof ParentFrame
+   */
   readonly eventEmitter: Events = new Events();
 
   /**
@@ -75,6 +137,7 @@ export default class ParentFrame {
 
   /**
    *
+   * Receives an event
    *
    * @private
    * @param {MessageEvent} event
@@ -122,7 +185,8 @@ export default class ParentFrame {
 
   /**
    *
-   * Builds an event payload
+   * Builds a payload
+   *
    * @param {string} command
    * @param {unknown} payload
    * @return {*}  {(FrameEvent | InitialFrameEvent)}

@@ -78,9 +78,9 @@ describe("ChildFrame", () => {
     });
 
     it("should define a parent placement", () => {
-      const marco = new ChildFrame(jest.fn);
+      const childFrame = new ChildFrame(jest.fn);
 
-      expect(marco.parentPlacement).toBe("myParentPlacement");
+      expect(childFrame.parentPlacement).toBe("myParentPlacement");
     });
   });
 
@@ -173,7 +173,7 @@ describe("ChildFrame", () => {
   });
 
   describe("parseMessage method", () => {
-    let marco: InstanceType<typeof ChildFrame>;
+    let childFrame: InstanceType<typeof ChildFrame>;
     let event: MessageEvent;
 
     beforeAll(() => {
@@ -188,7 +188,7 @@ describe("ChildFrame", () => {
         value: mockLocation,
       });
 
-      marco = new ChildFrame(jest.fn);
+      childFrame = new ChildFrame(jest.fn);
       event = new MessageEvent("message");
       jest.spyOn(event, "data", "get").mockReturnValue({
         command: "ready",
@@ -202,11 +202,27 @@ describe("ChildFrame", () => {
     });
 
     it("should parse the message", async () => {
-      const { payload, command, parentPlacement } = marco.parseMessage(event);
+      const { payload, command, parentPlacement } =
+        childFrame.parseMessage(event);
 
       expect(command).toEqual("ready");
       expect(payload).toEqual({});
       expect(parentPlacement).toEqual("myParentPlacement");
+    });
+
+    it("should parse the message and return empty on default", async () => {
+      jest.spyOn(event, "data", "get").mockReturnValue({
+        command: "",
+        payload: {},
+        placement: "",
+      });
+
+      const { payload, command, parentPlacement } =
+        childFrame.parseMessage(event);
+
+      expect(command).toEqual("");
+      expect(payload).toMatchObject({});
+      expect(parentPlacement).toEqual("");
     });
   });
 
@@ -221,7 +237,7 @@ describe("ChildFrame", () => {
       childFrame = new ChildFrame(callbackMock);
       payload = {
         availableMethods: ["method1", "method2"],
-        availableListeners: ["ready"],
+        availableListeners: ["myListener"],
         command: "",
         payload: {},
         placement: "myParentPlacement",
@@ -240,14 +256,20 @@ describe("ChildFrame", () => {
 
     it("should add available event listeners", () => {
       if (payload.availableListeners) {
-        expect(eventEmitterOnSpy).toHaveBeenCalledTimes(
-          payload.availableListeners.length
-        );
+        // expect(eventEmitterOnSpy).toHaveBeenCalledTimes(
+        //   payload.availableListeners.length
+        // );
+        // payload.availableListeners.forEach((listener) => {
+        //   expect(eventEmitterOnSpy).toHaveBeenCalledWith(
+        //     listener,
+        //     expect.any(Function)
+        //   );
+        // });
+
         payload.availableListeners.forEach((listener) => {
-          expect(eventEmitterOnSpy).toHaveBeenCalledWith(
-            listener,
-            expect.any(Function)
-          );
+          const callback = jest.fn();
+          childFrame.listeners[listener](callback);
+          expect(eventEmitterOnSpy).toHaveBeenCalledWith(listener, callback);
         });
       } else {
         expect(eventEmitterOnSpy).not.toHaveBeenCalled();

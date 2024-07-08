@@ -1,0 +1,165 @@
+import ERROR_MESSAGES from './constants/error-messages';
+import Events, { SubscriberCallback } from './helpers/event-emitter';
+
+export interface ParentFrameMethods {
+  [key: string]: (...args: never[]) => void;
+}
+
+export interface ParentFrameOptions {
+  childFrameNode: HTMLIFrameElement;
+  methods?: ParentFrameMethods;
+  listeners?: string[];
+  scripts?: string[];
+}
+
+export interface FrameEvent<Payload = unknown> {
+  command: string;
+  payload: Payload;
+}
+
+export interface InitialFrameEvent extends FrameEvent {
+  availableListeners: string[] | null;
+  availableMethods: string[] | null;
+  scripts?: string[];
+  placement: string;
+}
+
+export const RESERVED_READY_COMMAND = 'ready';
+
+export default class ParentFrame {
+  readonly child: HTMLIFrameElement;
+  readonly creativeUrl: URL;
+  readonly origin: string;
+  readonly listeners: string[] | null;
+  readonly methods: string[];
+  readonly scripts?: string[];
+  readonly placement: string;
+  readonly events: unknown[] = [];
+  readonly eventEmitter: Events = new Events();
+
+  constructor({
+    childFrameNode,
+    listeners,
+    methods = {},
+    scripts,
+  }: ParentFrameOptions) {
+    if (!childFrameNode.src) {
+      throw new Error(ERROR_MESSAGES.EMPTY_IFRAME);
+    }
+    this.child = childFrameNode;
+    this.origin = window.origin;
+    this.creativeUrl = new URL(this.child.src);
+
+    // A placement name must be defined in the embedded document source
+    const urlParams = new URLSearchParams(this.child.src);
+    this.placement = urlParams.get('_placement') || '';
+    if (!this.placement || this.placement === '') {
+      throw new Error(ERROR_MESSAGES.CANT_VALIDATE_PLACEMENT);
+    }
+
+    this.scripts = scripts;
+
+    this.listeners = listeners || null;
+    this.methods = Object.keys(methods);
+
+    window.addEventListener('message', this.receiveEvent.bind(this));
+
+    this.methods &&
+      this.methods.forEach((command: string) => {
+        if (command === RESERVED_READY_COMMAND) {
+          console.error(ERROR_MESSAGES.CANT_USE_READY_COMMAND);
+          return;
+        }
+
+        const event = this.eventEmitter.on(
+          command,
+          methods[command] as SubscriberCallback
+        );
+
+        this.events.push(event);
+      });
+
+    this.send(RESERVED_READY_COMMAND, undefined);
+  }
+
+  receiveEvent(event: MessageEvent): void {
+    // Check origin
+    // Because of browser's security restrictions, we need to know
+    // the remote host of wallpapers, and specify this value
+    // when the message is sent.
+    if (this.creativeUrl.origin !== event.origin) return;
+
+    try {
+      const { command, payload, placement } = this.parseMessage(event);
+
+      // Check placement
+      // Only process events coming from the placement embedded doc
+      if (this.placement !== placement) return;
+
+      this.eventEmitter.emit(command, payload);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  parseMessage(event: MessageEvent): {
+    command: string;
+    payload: unknown;
+    placement: string;
+  } {
+    return {
+      command: event.data.command,
+      payload: event.data.payload,
+      placement: event.data.placement,
+    };
+  }
+
+  buildEventPayload(
+    command: string,
+    payload: unknown
+  ): FrameEvent | InitialFrameEvent {
+    const res = {} as InitialFrameEvent;
+
+    if (command === RESERVED_READY_COMMAND) {
+      res.availableListeners = this.listeners;
+      res.availableMethods = this.methods;
+      res.scripts = this.scripts;
+    }
+
+    return {
+      ...res,
+      command,
+      payload,
+      placement: this.placement,
+    };
+  }
+
+  send(command: string, event: unknown): void {
+    if (
+      this.listeners &&
+      !this.listeners.includes(command) &&
+      command !== RESERVED_READY_COMMAND
+    ) {
+      throw new Error(ERROR_MESSAGES.NOT_DEFINED_EVENT_NAME);
+    }
+
+    if (!this.child.contentWindow) return;
+
+    const { origin: creativeOrigin } = this.creativeUrl;
+    if (!creativeOrigin) return;
+
+    try {
+      const payload = this.buildEventPayload(command, event);
+      this.child.contentWindow.postMessage(payload, creativeOrigin);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  destroy(): void {
+    window.removeEventListener('message', this.receiveEvent.bind(this));
+    this.events.forEach((event: any) => {
+      event.off();
+    });
+  }
+}

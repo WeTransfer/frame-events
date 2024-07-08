@@ -1,0 +1,14 @@
+{
+  "name": "@wetransfer/frame-events-api",
+  "version": "2.2.5",
+  "type": "commonjs",
+  "license": "Proprietary",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WeTransfer/adtech-monorepo.git"
+  },
+  "homepage": "https://github.com/WeTransfer/adtech-monorepo/tree/main/libs/frame-events-api/README.md",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}

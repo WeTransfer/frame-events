@@ -1,0 +1,47 @@
+{
+  "name": "frame-events-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/frame-events-api/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/frame-events-api",
+        "main": "libs/frame-events-api/src/index.ts",
+        "tsConfig": "libs/frame-events-api/tsconfig.lib.json",
+        "assets": ["libs/frame-events-api/*.md"]
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["libs/frame-events-api/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/frame-events-api"],
+      "options": {
+        "jestConfig": "libs/frame-events-api/jest.config.ts"
+      },
+      "configurations": {
+        "ci": {
+          "codeCoverage": true
+        }
+      }
+    },
+    "version": {
+      "executor": "@jscutlery/semver:version",
+      "options": {
+        "baseBranch": "main",
+        "versionTagPrefix": "${target}@",
+        "commitMessageFormat": "ci(${projectName}): 🚀 release to ${version} [cz-release]",
+        "trackDeps": true
+      }
+    }
+  },
+  "tags": ["scope:shared"]
+}

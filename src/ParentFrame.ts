@@ -1,30 +1,7 @@
+import { RESERVED_READY_COMMAND } from "./constants/constants";
 import ERROR_MESSAGES from "./constants/error-messages";
 import Events, { SubscriberCallback } from "./helpers/event-emitter";
-
-export interface ParentFrameMethods {
-  [key: string]: (...args: never[]) => void;
-}
-
-export interface ParentFrameOptions {
-  childFrameNode: HTMLIFrameElement;
-  methods?: ParentFrameMethods;
-  listeners?: string[];
-  scripts?: string[];
-}
-
-export interface FrameEvent<Payload = unknown> {
-  command: string;
-  payload: Payload;
-}
-
-export interface InitialFrameEvent extends FrameEvent {
-  availableListeners: string[] | null;
-  availableMethods: string[] | null;
-  scripts?: string[];
-  placement: string;
-}
-
-export const RESERVED_READY_COMMAND = "ready";
+import { FrameEvent, InitialFrameEvent, ParentFrameOptions } from "./types";
 
 export default class ParentFrame {
   readonly child: HTMLIFrameElement;
@@ -81,6 +58,7 @@ export default class ParentFrame {
   }
 
   private receiveEvent(event: MessageEvent): void {
+    // Verify the origin
     if (this.creativeUrl.origin !== event.origin) return;
 
     try {

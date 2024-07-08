@@ -1,27 +1,26 @@
+import { InitialFrameEvent } from "src/types";
 import ChildFrame from "../ChildFrame";
 import ERROR_MESSAGES from "../constants/error-messages";
 import Events from "../helpers/event-emitter";
 import { loadScriptTags } from "../helpers/load-script-tags";
-import { InitialFrameEvent } from "../ParentFrame";
 
 jest.mock("../helpers/event-emitter");
 jest.mock("../helpers/load-script-tags");
 
-describe("ChildFrame class", () => {
-  describe("construct class", () => {
+describe("ChildFrame", () => {
+  const originalLocation = window.location;
+
+  describe("construct", () => {
     afterAll(() => {
       jest.restoreAllMocks();
     });
 
     it("should throw an error if no origin is present in the URL", () => {
-      const originalLocation = window.location;
-
       const mockLocation = {
         ...originalLocation,
         search: "?_placement=myParentPlacement",
       };
 
-      // Use Object.defineProperty to set the new location object
       Object.defineProperty(window, "location", {
         configurable: true,
         writable: true,
@@ -34,14 +33,11 @@ describe("ChildFrame class", () => {
     });
 
     it("should throw an error if no placement is present is the URL", () => {
-      const originalLocation = window.location;
-
       const mockLocation = {
         ...originalLocation,
         search: "?_origin=http://parent:1",
       };
 
-      // Use Object.defineProperty to set the new location object
       Object.defineProperty(window, "location", {
         configurable: true,
         writable: true,
@@ -54,14 +50,11 @@ describe("ChildFrame class", () => {
     });
 
     it("should get the parent origin from the URL", () => {
-      const originalLocation = window.location;
-
       const mockLocation = {
         ...originalLocation,
         search: "?_origin=http://parent:1&_placement=myParentPlacement",
       };
 
-      // Use Object.defineProperty to set the new location object
       Object.defineProperty(window, "location", {
         configurable: true,
         writable: true,
@@ -135,7 +128,10 @@ describe("ChildFrame class", () => {
       global.dispatchEvent(event);
 
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(new Error("Parsing error"));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Error processing event:",
+        new Error("Parsing error")
+      );
     });
 
     it("should not emit an internal event if the message comes from a different placement", () => {
@@ -181,8 +177,6 @@ describe("ChildFrame class", () => {
     let event: MessageEvent;
 
     beforeAll(() => {
-      const originalLocation = window.location;
-
       const mockLocation = {
         ...originalLocation,
         search: "?_origin=http://parent:1&_placement=myParentPlacement",
@@ -217,26 +211,25 @@ describe("ChildFrame class", () => {
   });
 
   describe("onParentReady method", () => {
-    let marco: InstanceType<typeof ChildFrame>;
+    let childFrame: ChildFrame;
     const callbackMock = jest.fn();
     let payload: InitialFrameEvent;
+    let eventEmitterOnSpy: jest.SpyInstance;
+    let sendCommandSpy: jest.SpyInstance;
 
     beforeAll(() => {
-      const originalLocation = window.location;
-
       const mockLocation = {
         ...originalLocation,
         search: "?_origin=http://parent:1&_placement=myParentPlacement",
       };
 
-      // Use Object.defineProperty to set the new location object
       Object.defineProperty(window, "location", {
         configurable: true,
         writable: true,
         value: mockLocation,
       });
 
-      marco = new ChildFrame(callbackMock);
+      childFrame = new ChildFrame(callbackMock);
       payload = {
         availableMethods: ["method1", "method2"],
         availableListeners: ["myListener"],
@@ -244,9 +237,12 @@ describe("ChildFrame class", () => {
         payload: {},
         placement: "myParentPlacement",
         scripts: ['<script src="https://moat.com/script.js"></script>'],
-      } as unknown as InitialFrameEvent;
+      };
 
-      marco.onParentReady(payload);
+      eventEmitterOnSpy = jest.spyOn(childFrame.eventEmitter, "on");
+      sendCommandSpy = jest.spyOn(childFrame, "sendCommand");
+
+      childFrame.onParentReady(payload);
     });
 
     afterAll(() => {
@@ -254,12 +250,29 @@ describe("ChildFrame class", () => {
     });
 
     it("should add available event listeners", () => {
-      expect(marco.listeners["myListener"]).toBeDefined();
+      if (payload.availableListeners) {
+        expect(eventEmitterOnSpy).toHaveBeenCalledTimes(
+          payload.availableListeners.length
+        );
+        payload.availableListeners.forEach((listener) => {
+          expect(eventEmitterOnSpy).toHaveBeenCalledWith(
+            listener,
+            expect.any(Function)
+          );
+        });
+      } else {
+        // Handle case where availableListeners is null or undefined
+        expect(eventEmitterOnSpy).not.toHaveBeenCalled();
+      }
+    });
+
+    it("should add available event listeners", () => {
+      expect(childFrame.listeners["myListener"]).toBeDefined();
     });
 
     it("should register available methods", () => {
-      expect(marco.run["method1"]).toBeDefined();
-      expect(marco.run["method2"]).toBeDefined();
+      expect(childFrame.run["method1"]).toBeDefined();
+      expect(childFrame.run["method2"]).toBeDefined();
     });
 
     it("should fire the init callback", () => {
@@ -278,14 +291,11 @@ describe("ChildFrame class", () => {
     const callbackMock = jest.fn();
 
     beforeAll(() => {
-      const originalLocation = window.location;
-
       const mockLocation = {
         ...originalLocation,
         search: "?_origin=http://parent:1&_placement=myParentPlacement",
       };
 
-      // Use Object.defineProperty to set the new location object
       Object.defineProperty(window, "location", {
         configurable: true,
         writable: true,

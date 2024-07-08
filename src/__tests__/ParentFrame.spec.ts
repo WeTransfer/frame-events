@@ -1,10 +1,11 @@
-import ParentFrame, { ParentFrameOptions } from "../ParentFrame";
+import { ParentFrameOptions } from "src/types";
+import ParentFrame from "../ParentFrame";
 import ERROR_MESSAGES from "../constants/error-messages";
 import Events from "../helpers/event-emitter";
 
 jest.mock("../helpers/event-emitter");
 
-describe("ParentFrame class", () => {
+describe("ParentFrame", () => {
   it("should throw an error if the iframe element does not have a source", () => {
     expect(() => {
       const childFrameNode = document.createElement("iframe");
@@ -15,7 +16,7 @@ describe("ParentFrame class", () => {
     }).toThrow(ERROR_MESSAGES.EMPTY_IFRAME);
   });
 
-  describe("Construct class", () => {
+  describe("Construct", () => {
     const childFrameNode = document.createElement("iframe");
     childFrameNode.src =
       "http://child:1/?_origin=http://parent:2&_placement=myParentPlacement";

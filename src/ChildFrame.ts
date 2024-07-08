@@ -1,26 +1,27 @@
-import { InitialFrameEvent, RESERVED_READY_COMMAND } from './ParentFrame';
-import ERROR_MESSAGES from './constants/error-messages';
-import Events, { SubscriberCallback } from './helpers/event-emitter';
-import { loadScriptTags } from './helpers/load-script-tags';
+import ERROR_MESSAGES from "./constants/error-messages";
+import Events, { SubscriberCallback } from "./helpers/event-emitter";
+import { loadScriptTags } from "./helpers/load-script-tags";
+import { InitialFrameEvent } from "./types";
+import { RESERVED_READY_COMMAND } from "./constants/constants";
 
 export default class ChildFrame {
-  private callback: SubscriberCallback;
+  private readonly callback: SubscriberCallback;
   readonly endpoint: string | null;
   readonly listeners: { [key: string]: (...args: any[]) => void };
   readonly run: { [key: string]: (...args: any[]) => void };
-  public parentPlacement: string | null;
+  readonly parentPlacement: string | null;
   readonly eventEmitter: Events = new Events();
 
   constructor(initCallback: SubscriberCallback) {
     // Register endpoint
     const urlParams = new URLSearchParams(window.location.search);
-    this.endpoint = urlParams.get('_origin');
+    this.endpoint = urlParams.get("_origin");
     if (!this.endpoint) {
       throw new Error(ERROR_MESSAGES.CANT_VALIDATE_ORIGIN);
     }
 
     // Get parent placement from location
-    this.parentPlacement = urlParams.get('_placement');
+    this.parentPlacement = urlParams.get("_placement");
     if (!this.parentPlacement) {
       throw new Error(ERROR_MESSAGES.CANT_VALIDATE_PLACEMENT);
     }
@@ -35,7 +36,7 @@ export default class ChildFrame {
     this.listeners = {};
     this.run = {};
 
-    window.addEventListener('message', this.receiveEvent.bind(this));
+    window.addEventListener("message", this.receiveEvent.bind(this));
   }
 
   receiveEvent(event: MessageEvent): void {
@@ -49,10 +50,13 @@ export default class ChildFrame {
       // Only process messages coming from the parent placement
       if (parentPlacement !== this.parentPlacement) return;
 
-      if (command === RESERVED_READY_COMMAND) this.onParentReady(event.data);
-      else this.eventEmitter.emit(command, payload);
+      if (command === RESERVED_READY_COMMAND) {
+        this.onParentReady(event.data);
+      } else {
+        this.eventEmitter.emit(command, payload);
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Error processing event:", error);
     }
   }
 
@@ -62,9 +66,9 @@ export default class ChildFrame {
     parentPlacement: string;
   } {
     return {
-      command: event.data.command,
-      payload: event.data.payload,
-      parentPlacement: event.data.placement,
+      command: event.data.command || "",
+      payload: event.data.payload || {},
+      parentPlacement: event.data.placement || "",
     };
   }
 
@@ -72,28 +76,32 @@ export default class ChildFrame {
     const { availableListeners, availableMethods, scripts } = payload;
 
     // Attach listeners and commands
-    availableListeners &&
+    if (availableListeners) {
       availableListeners.forEach((name: string) => {
         this.listeners[name] = (fn: SubscriberCallback) => {
           this.eventEmitter.on(name, fn);
         };
       });
+    }
 
-    availableMethods &&
+    if (availableMethods) {
       availableMethods.forEach((command: string) => {
-        this.run[command] = (data) => {
+        this.run[command] = (data: unknown) => {
           this.sendCommand(command, data);
         };
       });
+    }
 
     // Add third party scripts
-    scripts && loadScriptTags(scripts);
+    if (scripts) {
+      loadScriptTags(scripts);
+    }
 
     // Fire custom callback
     this.callback(payload);
   }
 
-  sendCommand(command: string, payload: unknown): void {
+  public sendCommand(command: string, payload: unknown): void {
     const data = {
       command,
       payload,

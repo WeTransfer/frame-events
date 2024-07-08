@@ -171,18 +171,6 @@ describe("ParentFrame class", () => {
       expect(parseMessageMock).not.toHaveBeenCalled();
     });
 
-    // it("should return an error if command and placement are not defined", () => {
-    //   expect(() => {
-    //     parseMessageMock.mockReturnValueOnce({
-    //       payload: {},
-    //       command: "",
-    //       placement: "",
-    //     });
-    //   }).toThrow(ERROR_MESSAGES.INVALID_MESSAGE_FORMAT);
-
-    //   // expect(parseMessageMock).toHaveBeenCalled();
-    // });
-
     it("should try to parse the message", () => {
       jest.spyOn(event, "origin", "get").mockReturnValueOnce("http://child:1");
       global.dispatchEvent(event);

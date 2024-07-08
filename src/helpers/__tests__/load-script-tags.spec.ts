@@ -22,7 +22,7 @@ describe("loadScriptTags method", () => {
     expect(createElementSpy).not.toHaveBeenCalled();
   });
 
-  it("should do nothing if for some crazy af reason the document has no head element", () => {
+  it("should do nothing if the document has no head element", () => {
     querySelectorSpy.mockImplementationOnce(() => null);
 
     loadScriptTags([mockTag]);

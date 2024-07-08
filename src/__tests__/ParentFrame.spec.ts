@@ -31,7 +31,7 @@ describe("ParentFrame", () => {
         },
       },
       listeners: ["eventName1", "eventName2"],
-      scripts: ['<script src="https://moat.com/script.js"></script>'],
+      scripts: ['<script src="https://example.com/script.js"></script>'],
     };
     let padre: InstanceType<typeof ParentFrame>;
     let consoleErrorSpy: jest.SpyInstance;
@@ -61,13 +61,13 @@ describe("ParentFrame", () => {
 
     it("should expose the collection of 3rd party scripts", () => {
       expect(padre.scripts).toEqual([
-        '<script src="https://moat.com/script.js"></script>',
+        '<script src="https://example.com/script.js"></script>',
       ]);
     });
 
     it("should expose the collection of 3rd party scripts", () => {
       expect(padre.scripts).toEqual([
-        '<script src="https://moat.com/script.js"></script>',
+        '<script src="https://example.com/script.js"></script>',
       ]);
     });
 
@@ -282,7 +282,7 @@ describe("ParentFrame", () => {
           myOtherMethod() {},
         },
         listeners: ["myListener"],
-        scripts: ['<script src="https://moat.com/script.js"></script>'],
+        scripts: ['<script src="https://example.com/script.js"></script>'],
       };
       padre = new ParentFrame(options);
     });
@@ -301,7 +301,7 @@ describe("ParentFrame", () => {
             key: "value",
           },
           placement: "myParentPlacement",
-          scripts: ['<script src="https://moat.com/script.js"></script>'],
+          scripts: ['<script src="https://example.com/script.js"></script>'],
         });
       });
     });
@@ -319,7 +319,7 @@ describe("ParentFrame", () => {
           },
           availableMethods: ["myMethod", "myOtherMethod"],
           availableListeners: ["myListener"],
-          scripts: ['<script src="https://moat.com/script.js"></script>'],
+          scripts: ['<script src="https://example.com/script.js"></script>'],
           placement: "myParentPlacement",
         });
       });

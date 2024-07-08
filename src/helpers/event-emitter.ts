@@ -45,7 +45,12 @@ export default class Events {
    * @param {SubscriberCallback} callback - The callback function to be executed when the event is emitted.
    * @return {object} An object with an `off` method to unsubscribe the callback from the event.
    */
-  on(event: string, callback: SubscriberCallback) {
+  on(
+    event: string,
+    callback: SubscriberCallback
+  ): {
+    off: () => void;
+  } {
     if (!this.subscribers[event]) {
       this.subscribers[event] = [];
     }
@@ -68,7 +73,7 @@ export default class Events {
    * @param {...any[]} args - The arguments to be passed to the callbacks.
    * @return {void}
    */
-  emit(event: string, ...args: any[]) {
+  emit(event: string, ...args: any[]): void {
     if (!this.subscribers[event]) return;
     this.subscribers[event].forEach((subscriberCallback: SubscriberCallback) =>
       subscriberCallback(...args)

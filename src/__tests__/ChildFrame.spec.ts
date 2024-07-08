@@ -241,7 +241,7 @@ describe("ChildFrame", () => {
         command: "",
         payload: {},
         placement: "myParentPlacement",
-        scripts: ['<script src="https://moat.com/script.js"></script>'],
+        scripts: ['<script src="https://example.com/script.js"></script>'],
       };
 
       eventEmitterOnSpy = jest.spyOn(childFrame.eventEmitter, "on");

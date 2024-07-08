@@ -8,14 +8,14 @@ const config: Config = {
   },
   moduleFileExtensions: ["ts", "js", "html"],
   coverageReporters: ["text", "text-summary"],
-  // coverageThreshold: {
-  //   global: {
-  //     branches: 80,
-  //     functions: 80,
-  //     lines: 90,
-  //     statements: 90,
-  //   },
-  // },
+  coverageThreshold: {
+    global: {
+      branches: 95,
+      functions: 95,
+      lines: 95,
+      statements: 95,
+    },
+  },
 };
 
 export default config;

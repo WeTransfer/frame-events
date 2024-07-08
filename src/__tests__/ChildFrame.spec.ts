@@ -61,9 +61,9 @@ describe("ChildFrame", () => {
         value: mockLocation,
       });
 
-      const marco = new ChildFrame(jest.fn);
+      const childFrame = new ChildFrame(jest.fn);
 
-      expect(marco.endpoint).toBe("http://parent:1");
+      expect(childFrame.endpoint).toBe("http://parent:1");
     });
 
     it("should start listening for message events", () => {
@@ -218,21 +218,10 @@ describe("ChildFrame", () => {
     let sendCommandSpy: jest.SpyInstance;
 
     beforeAll(() => {
-      const mockLocation = {
-        ...originalLocation,
-        search: "?_origin=http://parent:1&_placement=myParentPlacement",
-      };
-
-      Object.defineProperty(window, "location", {
-        configurable: true,
-        writable: true,
-        value: mockLocation,
-      });
-
       childFrame = new ChildFrame(callbackMock);
       payload = {
         availableMethods: ["method1", "method2"],
-        availableListeners: ["myListener"],
+        availableListeners: ["ready"],
         command: "",
         payload: {},
         placement: "myParentPlacement",
@@ -261,18 +250,20 @@ describe("ChildFrame", () => {
           );
         });
       } else {
-        // Handle case where availableListeners is null or undefined
         expect(eventEmitterOnSpy).not.toHaveBeenCalled();
       }
     });
 
-    it("should add available event listeners", () => {
-      expect(childFrame.listeners["myListener"]).toBeDefined();
-    });
-
     it("should register available methods", () => {
-      expect(childFrame.run["method1"]).toBeDefined();
-      expect(childFrame.run["method2"]).toBeDefined();
+      if (payload.availableMethods) {
+        payload.availableMethods.forEach((method) => {
+          expect(childFrame.run[method]).toBeDefined();
+          childFrame.run[method]({});
+          expect(sendCommandSpy).toHaveBeenCalledWith(method, {});
+        });
+      } else {
+        expect(sendCommandSpy).not.toHaveBeenCalled();
+      }
     });
 
     it("should fire the init callback", () => {
@@ -287,7 +278,7 @@ describe("ChildFrame", () => {
   });
 
   describe("sendCommand method", () => {
-    let marco: InstanceType<typeof ChildFrame>;
+    let childFrame: InstanceType<typeof ChildFrame>;
     const callbackMock = jest.fn();
 
     beforeAll(() => {
@@ -302,7 +293,7 @@ describe("ChildFrame", () => {
         value: mockLocation,
       });
       window.parent.postMessage = jest.fn();
-      marco = new ChildFrame(callbackMock);
+      childFrame = new ChildFrame(callbackMock);
     });
 
     afterAll(() => {
@@ -310,7 +301,7 @@ describe("ChildFrame", () => {
     });
 
     it("should post a message", () => {
-      marco.sendCommand("myCommand", {});
+      childFrame.sendCommand("myCommand", {});
 
       expect(window.parent.postMessage).toHaveBeenCalledTimes(1);
       expect(window.parent.postMessage).toHaveBeenCalledWith(

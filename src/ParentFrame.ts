@@ -3,6 +3,12 @@ import ERROR_MESSAGES from "./constants/error-messages";
 import Events, { SubscriberCallback } from "./helpers/event-emitter";
 import { FrameEvent, InitialFrameEvent, ParentFrameOptions } from "./types";
 
+/**
+ * ParentFrame is responsible for sending events to the child frame
+ *
+ * @export
+ * @class ParentFrame
+ */
 export default class ParentFrame {
   readonly child: HTMLIFrameElement;
   readonly creativeUrl: URL;
@@ -14,6 +20,16 @@ export default class ParentFrame {
   readonly events: unknown[] = [];
   readonly eventEmitter: Events = new Events();
 
+  /**
+   * Creates an instance of ParentFrame.
+   * @param {ParentFrameOptions} {
+   *     childFrameNode,
+   *     listeners = [],
+   *     methods = {},
+   *     scripts = [],
+   *   }
+   * @memberof ParentFrame
+   */
   constructor({
     childFrameNode,
     listeners = [],
@@ -57,6 +73,14 @@ export default class ParentFrame {
     this.send(RESERVED_READY_COMMAND, undefined);
   }
 
+  /**
+   *
+   *
+   * @private
+   * @param {MessageEvent} event
+   * @return {*}  {void}
+   * @memberof ParentFrame
+   */
   private receiveEvent(event: MessageEvent): void {
     // Verify the origin
     if (this.creativeUrl.origin !== event.origin) return;
@@ -73,6 +97,17 @@ export default class ParentFrame {
     }
   }
 
+  /**
+   *
+   * Parses a message
+   * @param {MessageEvent} event
+   * @return {*}  {{
+   *     command: string;
+   *     payload: unknown;
+   *     placement: string;
+   *   }}
+   * @memberof ParentFrame
+   */
   parseMessage(event: MessageEvent): {
     command: string;
     payload: unknown;
@@ -85,6 +120,14 @@ export default class ParentFrame {
     return { command, payload, placement };
   }
 
+  /**
+   *
+   * Builds an event payload
+   * @param {string} command
+   * @param {unknown} payload
+   * @return {*}  {(FrameEvent | InitialFrameEvent)}
+   * @memberof ParentFrame
+   */
   buildEventPayload(
     command: string,
     payload: unknown
@@ -106,6 +149,14 @@ export default class ParentFrame {
     return result;
   }
 
+  /**
+   *
+   * Sends an event to the child frame
+   * @param {string} command
+   * @param {unknown} event
+   * @return {*}  {void}
+   * @memberof ParentFrame
+   */
   public send(command: string, event: unknown): void {
     if (
       this.listeners &&
@@ -128,6 +179,12 @@ export default class ParentFrame {
     }
   }
 
+  /**
+   *
+   * Destroys the parent frame
+   *
+   * @memberof ParentFrame
+   */
   public destroy(): void {
     window.removeEventListener("message", this.receiveEvent.bind(this));
     this.events.forEach((event: any) => {

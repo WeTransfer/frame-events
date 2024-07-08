@@ -25,6 +25,13 @@ export interface Subscribers {
  * @class Events
  */
 export default class Events {
+  /**
+   *
+   * An object containing subscribers for different events.
+   *
+   * @type {Subscribers}
+   * @memberof Events
+   */
   readonly subscribers: Subscribers;
 
   constructor() {

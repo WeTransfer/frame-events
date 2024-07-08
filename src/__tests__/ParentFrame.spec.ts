@@ -253,7 +253,24 @@ describe("ParentFrame class", () => {
       jest.clearAllMocks();
     });
 
+    it("should throw an error if command or placement is not defined", () => {
+      jest.spyOn(event, "data", "get").mockReturnValue({
+        command: "",
+        payload: {},
+        placement: "",
+      });
+
+      expect(() => {
+        (padre as any).parseMessage(event);
+      }).toThrow(ERROR_MESSAGES.INVALID_MESSAGE_FORMAT);
+    });
+
     it("should parse the message", () => {
+      jest.spyOn(event, "data", "get").mockReturnValue({
+        command: "ready",
+        payload: {},
+        placement: "myPlacement",
+      });
       const { payload, command, placement } = padre.parseMessage(event);
 
       expect(command).toEqual("ready");
@@ -288,11 +305,14 @@ describe("ParentFrame class", () => {
         });
 
         expect(eP).toEqual({
+          availableListeners: null,
+          availableMethods: null,
           command: "commandName",
           payload: {
             key: "value",
           },
           placement: "myParentPlacement",
+          scripts: ['<script src="https://moat.com/script.js"></script>'],
         });
       });
     });
@@ -410,7 +430,60 @@ describe("ParentFrame class", () => {
         key: "value",
       });
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(new Error("Parsing error"));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "Error sending message:",
+        new Error("Parsing error")
+      );
+    });
+  });
+
+  describe("destroy method", () => {
+    let padre: InstanceType<typeof ParentFrame>;
+    let removeEventListenerSpy: jest.SpyInstance;
+    let eventMock: { off: jest.Mock };
+
+    beforeAll(() => {
+      const childFrameNode = document.createElement("iframe");
+      childFrameNode.src =
+        "http://child:1/?_origin=http://parent:2&_placement=myParentPlacement";
+      const options: ParentFrameOptions = {
+        childFrameNode,
+        methods: {
+          myMethod() {
+            jest.fn();
+          },
+        },
+      };
+      padre = new ParentFrame(options);
+      removeEventListenerSpy = jest.spyOn(window, "removeEventListener");
+
+      Object.defineProperty(padre, "events", {
+        writable: true,
+        value: [],
+      });
+      eventMock = { off: jest.fn() };
+
+      padre.events.push(eventMock);
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it("should remove the message event listener", () => {
+      padre.destroy();
+
+      expect(removeEventListenerSpy).toHaveBeenCalledTimes(1);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        "message",
+        expect.any(Function)
+      );
+    });
+
+    it("should call off on all registered events", () => {
+      padre.destroy();
+
+      expect(eventMock.off).toHaveBeenCalledTimes(1);
     });
   });
 });

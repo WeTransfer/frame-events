@@ -123,18 +123,12 @@ export default class ParentFrame {
     if (command === RESERVED_READY_COMMAND) {
       result.availableListeners = this.listeners;
       result.availableMethods = this.methods;
-      result.scripts = this.scripts;
     }
 
-    return {
-      ...result,
-      command,
-      payload,
-      placement: this.placement,
-    };
+    return result;
   }
 
-  send(command: string, event: unknown): void {
+  public send(command: string, event: unknown): void {
     if (
       this.listeners &&
       !this.listeners.includes(command) &&
@@ -152,11 +146,11 @@ export default class ParentFrame {
       const payload = this.buildEventPayload(command, event);
       this.child.contentWindow.postMessage(payload, creativeOrigin);
     } catch (error) {
-      console.error(error);
+      console.error("Error sending message:", error);
     }
   }
 
-  destroy(): void {
+  public destroy(): void {
     window.removeEventListener("message", this.receiveEvent.bind(this));
     this.events.forEach((event: any) => {
       event.off();

@@ -1,5 +1,5 @@
-import ERROR_MESSAGES from './constants/error-messages';
-import Events, { SubscriberCallback } from './helpers/event-emitter';
+import ERROR_MESSAGES from "./constants/error-messages";
+import Events, { SubscriberCallback } from "./helpers/event-emitter";
 
 export interface ParentFrameMethods {
   [key: string]: (...args: never[]) => void;
@@ -24,7 +24,7 @@ export interface InitialFrameEvent extends FrameEvent {
   placement: string;
 }
 
-export const RESERVED_READY_COMMAND = 'ready';
+export const RESERVED_READY_COMMAND = "ready";
 
 export default class ParentFrame {
   readonly child: HTMLIFrameElement;
@@ -39,9 +39,9 @@ export default class ParentFrame {
 
   constructor({
     childFrameNode,
-    listeners,
+    listeners = [],
     methods = {},
-    scripts,
+    scripts = [],
   }: ParentFrameOptions) {
     if (!childFrameNode.src) {
       throw new Error(ERROR_MESSAGES.EMPTY_IFRAME);
@@ -52,53 +52,46 @@ export default class ParentFrame {
 
     // A placement name must be defined in the embedded document source
     const urlParams = new URLSearchParams(this.child.src);
-    this.placement = urlParams.get('_placement') || '';
-    if (!this.placement || this.placement === '') {
+    this.placement = urlParams.get("_placement") || "";
+    if (!this.placement) {
       throw new Error(ERROR_MESSAGES.CANT_VALIDATE_PLACEMENT);
     }
 
     this.scripts = scripts;
-
-    this.listeners = listeners || null;
+    this.listeners = listeners;
     this.methods = Object.keys(methods);
 
-    window.addEventListener('message', this.receiveEvent.bind(this));
+    window.addEventListener("message", this.receiveEvent.bind(this));
 
-    this.methods &&
-      this.methods.forEach((command: string) => {
-        if (command === RESERVED_READY_COMMAND) {
-          console.error(ERROR_MESSAGES.CANT_USE_READY_COMMAND);
-          return;
-        }
+    this.methods.forEach((command: string) => {
+      if (command === RESERVED_READY_COMMAND) {
+        console.error(ERROR_MESSAGES.CANT_USE_READY_COMMAND);
+        return;
+      }
 
-        const event = this.eventEmitter.on(
-          command,
-          methods[command] as SubscriberCallback
-        );
+      const event = this.eventEmitter.on(
+        command,
+        methods[command] as SubscriberCallback
+      );
 
-        this.events.push(event);
-      });
+      this.events.push(event);
+    });
 
     this.send(RESERVED_READY_COMMAND, undefined);
   }
 
-  receiveEvent(event: MessageEvent): void {
-    // Check origin
-    // Because of browser's security restrictions, we need to know
-    // the remote host of wallpapers, and specify this value
-    // when the message is sent.
+  private receiveEvent(event: MessageEvent): void {
     if (this.creativeUrl.origin !== event.origin) return;
 
     try {
       const { command, payload, placement } = this.parseMessage(event);
 
-      // Check placement
       // Only process events coming from the placement embedded doc
       if (this.placement !== placement) return;
 
       this.eventEmitter.emit(command, payload);
     } catch (error) {
-      console.error(error);
+      console.error("Error processing event:", error);
     }
   }
 
@@ -107,27 +100,34 @@ export default class ParentFrame {
     payload: unknown;
     placement: string;
   } {
-    return {
-      command: event.data.command,
-      payload: event.data.payload,
-      placement: event.data.placement,
-    };
+    const { command, payload, placement } = event.data;
+    if (!command || !placement) {
+      throw new Error(ERROR_MESSAGES.INVALID_MESSAGE_FORMAT);
+    }
+    return { command, payload, placement };
   }
 
   buildEventPayload(
     command: string,
     payload: unknown
   ): FrameEvent | InitialFrameEvent {
-    const res = {} as InitialFrameEvent;
+    const result: InitialFrameEvent = {
+      command,
+      payload,
+      placement: this.placement,
+      availableListeners: null,
+      availableMethods: null,
+      scripts: this.scripts,
+    };
 
     if (command === RESERVED_READY_COMMAND) {
-      res.availableListeners = this.listeners;
-      res.availableMethods = this.methods;
-      res.scripts = this.scripts;
+      result.availableListeners = this.listeners;
+      result.availableMethods = this.methods;
+      result.scripts = this.scripts;
     }
 
     return {
-      ...res,
+      ...result,
       command,
       payload,
       placement: this.placement,
@@ -157,7 +157,7 @@ export default class ParentFrame {
   }
 
   destroy(): void {
-    window.removeEventListener('message', this.receiveEvent.bind(this));
+    window.removeEventListener("message", this.receiveEvent.bind(this));
     this.events.forEach((event: any) => {
       event.off();
     });

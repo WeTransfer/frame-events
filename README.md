@@ -1,10 +1,10 @@
-# frame-events-api
+# Frame-Events
 
-Frame Events API is a library for establishing secure parent and child 2-way communication when working with iframes and the `window.postMessage` method.
+Frame Events is a library for establishing secure parent and child 2-way communication when working with iframes and the `window.postMessage` method.
 
 ## How it works
 
-The library consists in two classes, `ParentFrame`, to be instantiated in the parent document and `ChildFrame`, to be run in the embedded document. They both make use of the `Window.postMessage()` method and the `onmessage` event handler.
+The library consists of two classes, `ParentFrame`, to be instantiated in the parent document and `ChildFrame`, to be run in the embedded document. They both make use of the `Window.postMessage()` method and the `onmessage` event handler.
 
 [Receiver and emitter diagram](./docs/event_flow.drawio)
 
@@ -80,16 +80,16 @@ const state = {
   counter: 0,
 };
 const myAPI = new ParentFrame({
-  child: document.querySelector('iframe'),
+  child: document.querySelector("iframe"),
   methods: {
     updateCounter: function () {
       state.counter = state.counter++;
-      this.send('counterUpdated', {
+      this.send("counterUpdated", {
         counter: state.counter,
       });
     },
   },
-  listeners: ['counterUpdated'],
+  listeners: ["counterUpdated"],
   scripts: ['<script src=""></script>', '<script src=""></script>'],
 });
 ```
@@ -113,7 +113,7 @@ const myChildAPI = new ChildFrame(function (data) {
   myChildAPI.listeners.counterUpdated((event) => {});
 
   // Fire commands
-  document.querySelector('button').addEventListener('click', function () {
+  document.querySelector("button").addEventListener("click", function () {
     myChildAPI.run.updateCounter();
   });
 });
@@ -126,11 +126,13 @@ const myChildAPI = new ChildFrame(function (data) {
 ## Build
 
 ```
-  nx build frame-events-api --prod
+  yarn build
 ```
-
-This library was generated with [Nx](https://nx.dev).
 
 ## Running unit tests
 
-Run `nx test frame-events-api` to execute the unit tests via [Jest](https://jestjs.io).
+Run `yarn test` to execute the unit tests via [Jest](https://jestjs.io).
+
+## Running unit tests with coverage
+
+Run `yarn test:coverafe` to execute the unit tests with coverage via [Jest](https://jestjs.io).

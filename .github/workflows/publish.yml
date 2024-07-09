@@ -62,28 +62,28 @@ jobs:
         with:
           env: ${{ env.GITHUB_TOKEN }}
 
-      - name: Setup git permissions
-        run: |
-          git config --global user.name "wetransferplatform"
-          git config --global user.email "platform+github@wetransfer.com"
-          git config --global user.signingkey "$WETRANSFERPLATFORM_GPG_KEYID"
-          git config --global commit.gpgsign true
-        shell: bash
-        env:
-          WETRANSFERPLATFORM_GPG_KEYID: ${{ secrets.WETRANSFERPLATFORM_GPG_KEYID }}
+      # - name: Setup git permissions
+      #   run: |
+      #     git config --global user.name "wetransferplatform"
+      #     git config --global user.email "platform+github@wetransfer.com"
+      #     git config --global user.signingkey "$WETRANSFERPLATFORM_GPG_KEYID"
+      #     git config --global commit.gpgsign true
+      #   shell: bash
+      #   env:
+      #     WETRANSFERPLATFORM_GPG_KEYID: ${{ secrets.WETRANSFERPLATFORM_GPG_KEYID }}
 
-      - name: Import GPG key
-        run: |
-          echo "$WETRANSFERPLATFORM_GPG_KEY" | gpg --batch --import
-        env:
-          WETRANSFERPLATFORM_GPG_KEY: ${{ secrets.WETRANSFERPLATFORM_GPG_KEY }}
-        shell: bash
+      # - name: Import GPG key
+      #   run: |
+      #     echo "$WETRANSFERPLATFORM_GPG_KEY" | gpg --batch --import
+      #   env:
+      #     WETRANSFERPLATFORM_GPG_KEY: ${{ secrets.WETRANSFERPLATFORM_GPG_KEY }}
+      #   shell: bash
 
-      - name: Trust imported GPG key
-        run: |
-          KEY_ID=$(gpg --list-keys --with-colons | grep '^pub' | cut -d':' -f5)
-          echo -e "trust\n5\ny\n" | gpg --command-fd 0 --batch --edit-key $KEY_ID
-        shell: bash
+      # - name: Trust imported GPG key
+      #   run: |
+      #     KEY_ID=$(gpg --list-keys --with-colons | grep '^pub' | cut -d':' -f5)
+      #     echo -e "trust\n5\ny\n" | gpg --command-fd 0 --batch --edit-key $KEY_ID
+      #   shell: bash
 
       # - name: Push changes and tags
       #   run: |
@@ -111,6 +111,29 @@ jobs:
 
       - name: Build package
         run: yarn build
+
+      - name: Setup git permissions
+        run: |
+          git config --global user.name "wetransferplatform"
+          git config --global user.email "platform+github@wetransfer.com"
+          git config --global user.signingkey "$WETRANSFERPLATFORM_GPG_KEYID"
+          git config --global commit.gpgsign true
+        shell: bash
+        env:
+          WETRANSFERPLATFORM_GPG_KEYID: ${{ secrets.WETRANSFERPLATFORM_GPG_KEYID }}
+
+      - name: Import GPG key
+        run: |
+          echo "$WETRANSFERPLATFORM_GPG_KEY" | gpg --batch --import
+        env:
+          WETRANSFERPLATFORM_GPG_KEY: ${{ secrets.WETRANSFERPLATFORM_GPG_KEY }}
+        shell: bash
+
+      - name: Trust imported GPG key
+        run: |
+          KEY_ID=$(gpg --list-keys --with-colons | grep '^pub' | cut -d':' -f5)
+          echo -e "trust\n5\ny\n" | gpg --command-fd 0 --batch --edit-key $KEY_ID
+        shell: bash
 
       - name: Bump version
         id: version

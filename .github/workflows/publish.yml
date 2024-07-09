@@ -90,7 +90,7 @@ jobs:
         id: version
         run: |
           # Bump version using yarn version
-          yarn version --patch
+          npm version --patch
 
           # Verify changes
           git status
@@ -100,14 +100,14 @@ jobs:
           echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
         shell: bash
 
-      - name: Push changes and tags
-        run: |
-          git commit -am "Bump version to ${{ env.NEW_VERSION }}"
-          git tag -a "v${{ env.NEW_VERSION }}" -m "Release version ${{ env.NEW_VERSION }}"
-          git push -f origin ${{ github.ref_name }} --follow-tags
-        shell: bash
-        env:
-          NEW_VERSION: ${{ env.NEW_VERSION }}
+      # - name: Push changes and tags
+      #   run: |
+      #     git commit -am "Bump version to ${{ env.NEW_VERSION }}"
+      #     git tag -a "v${{ env.NEW_VERSION }}" -m "Release version ${{ env.NEW_VERSION }}"
+      #     git push -f origin ${{ github.ref_name }} --follow-tags
+      #   shell: bash
+      #   env:
+      #     NEW_VERSION: ${{ env.NEW_VERSION }}
 
   publish:
     name: Publish Package
@@ -128,6 +128,6 @@ jobs:
         run: yarn build
 
       - name: Publish package
-        run: yarn publish --registry https://npm.pkg.github.com
+        run: yarn publish --tag ${{ env.NEW_VERSION }}" --registry https://npm.pkg.github.com --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_ACCESS_TOKEN }}

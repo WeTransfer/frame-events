@@ -85,20 +85,6 @@ jobs:
           echo -e "trust\n5\ny\n" | gpg --command-fd 0 --batch --edit-key $KEY_ID
         shell: bash
 
-      - name: Bump version
-        id: version
-        run: |
-          # Bump version using yarn version
-          yarn version --patch
-
-          # Verify changes
-          git status
-          cat package.json
-
-          # Extract the new version
-          echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
-        shell: bash
-
       # - name: Push changes and tags
       #   run: |
       #     git commit -am "Bump version to ${{ env.NEW_VERSION }}"
@@ -126,9 +112,18 @@ jobs:
       - name: Build package
         run: yarn build
 
-      - name: Another Step
+      - name: Bump version
+        id: version
         run: |
-          echo "The new version is ${{ env.NEW_VERSION }}"
+          # Bump version using yarn version
+          yarn version --patch
+
+          # Verify changes
+          git status
+          cat package.json
+
+          # Extract the new version
+          echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
         shell: bash
 
       - name: Publish package

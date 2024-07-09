@@ -15,7 +15,6 @@ on:
       - "**" # Allow the workflow to be triggered on any branch for testing
 
 permissions:
-  id-token: write
   packages: write
   contents: write
 

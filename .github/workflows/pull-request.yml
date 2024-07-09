@@ -43,12 +43,14 @@ jobs:
           mkdir -p ./coverage &&
           touch ./coverage/summary.txt &&
           yarn test:coverage >> ./coverage/summary.txt
+        shell: bash
 
       - name: Retrieve code coverage
         id: code_coverage
         run: |
           echo "Total coverage: $(grep -oE '[0-9]+\.[0-9]+%' -m 1 ./coverage/summary.txt | cut -d '.' -f1)% of statements" &&
           echo "coverage_percentage=$(grep -oE '[0-9]+\.[0-9]+%' -m 1 ./coverage/summary.txt | cut -d '.' -f1)" >> "$GITHUB_OUTPUT"
+        shell: bash
 
       - name: Upload Coverage Artifacts
         uses: actions/upload-artifact@v3

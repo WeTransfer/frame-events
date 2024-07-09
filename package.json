@@ -4,7 +4,7 @@
   "type": "commonjs",
   "license": "MIT",
   "engines": {
-    "node": ">=19.0.0"
+    "node": "20"
   },
   "files": [
     "build"

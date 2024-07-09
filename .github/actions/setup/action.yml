@@ -9,6 +9,8 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -17,7 +19,6 @@ runs:
         registry-url: "https://npm.pkg.github.com"
         scope: "@wetransfer"
         token: ${{ inputs.GITHUB_TOKEN }}
-        fetch-depth: 0
 
     - name: Install dependencies
       run: yarn install

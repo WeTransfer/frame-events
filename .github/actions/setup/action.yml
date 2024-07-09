@@ -1,5 +1,10 @@
 name: "Setup"
 
+inputs:
+  GITHUB_TOKEN:
+    description: "GitHub token"
+    required: true
+
 runs:
   using: "composite"
   steps:
@@ -11,7 +16,7 @@ runs:
         node-version: 20
         registry-url: "https://npm.pkg.github.com"
         scope: "@wetransfer"
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ inputs.GITHUB_TOKEN }}
 
     - name: Install dependencies
       run: yarn install

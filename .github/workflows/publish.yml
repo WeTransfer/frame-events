@@ -25,6 +25,8 @@ jobs:
 
       - name: Setup Node.js environment
         uses: ./.github/actions/setup
+        with:
+          env: ${{ env.GITHUB_TOKEN }}
 
       - name: Run linting
         run: yarn lint

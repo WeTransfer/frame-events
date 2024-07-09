@@ -64,6 +64,7 @@ jobs:
 
           # Extract the new version
           echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
+        shell: bash
 
       - name: Push changes and tags
         run: |

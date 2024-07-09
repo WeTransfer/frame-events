@@ -1,6 +1,6 @@
 {
   "name": "@wetransfer/frame-events",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "commonjs",
   "license": "MIT",
   "engines": {

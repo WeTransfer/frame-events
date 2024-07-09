@@ -153,7 +153,7 @@ jobs:
         run: NODE_AUTH_TOKEN="$NPM_PUBLISH_ACCESS_TOKEN" yarn publish --tag "${{ env.NEW_VERSION }}"  --access restricted
 
       - name: Update latest tag
-        run: npm dist-tag add ${{env.PACKAGE_NAME}}@${{ env.NEW_VERSION }} latest
+        run: NODE_AUTH_TOKEN="$NPM_PUBLISH_ACCESS_TOKEN" npm dist-tag add ${{env.PACKAGE_NAME}}@${{ env.NEW_VERSION }} latest
 
         # run: yarn publish --tag "${{ env.NEW_VERSION }}" --registry https://npm.pkg.github.com --access public
         # env:

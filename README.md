@@ -1,4 +1,4 @@
-# Frame-Events
+# 🔗 Frame Events ![Coverage](https://github.com/WeTransfer/frame-events/wiki/coverage.svg)[![Publish](https://github.com/WeTransfer/frame-events/actions/workflows/pusblish.yml/badge.svg)](https://github.com/WeTransfer/frame-events/actions/workflows/publish.yml)
 
 Frame Events is a library for establishing secure parent and child 2-way communication when working with iframes and the `window.postMessage` method.
 
@@ -135,4 +135,4 @@ Run `yarn test` to execute the unit tests via [Jest](https://jestjs.io).
 
 ## Running unit tests with coverage
 
-Run `yarn test:coverafe` to execute the unit tests with coverage via [Jest](https://jestjs.io).
+Run `yarn test:coverage` to execute the unit tests with coverage via [Jest](https://jestjs.io).

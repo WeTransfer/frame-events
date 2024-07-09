@@ -10,7 +10,7 @@ on:
 
 permissions:
   id-token: write
-  contents: write
+  contents: read
 
 jobs:
   linting:
@@ -55,20 +55,6 @@ jobs:
           name: code-coverage
           path: coverage
 
-      # - name: Bump version
-      #   id: version
-      #   run: |
-      #     # Bump version using yarn version
-      #     yarn version --patch
-
-      #     # Extract the new version
-      #     echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
-      #   shell: bash
-
-      # - name: Push changes and tags
-      #   run: |
-      #     git push origin main --follow-tags
-
   upload_coverage:
     name: Code Coverage
     uses: WeTransfer/gha-workflows/.github/workflows/upload_coverage.yml@main
@@ -77,24 +63,20 @@ jobs:
       coverage_percentage: ${{ needs.unit-test.outputs.coverage_percentage }}
       badge_green_limit: 90
 
-  publish:
-    name: Publish Package
-    runs-on: ubuntu-latest
-    needs: [linting, unit-test]
-    steps:
-      - uses: actions/checkout@v4
+  # publish:
+  #   name: Publish Package
+  #   runs-on: ubuntu-latest
+  #   needs: [linting, unit-test]
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - name: Setup Node.js environment
-        uses: ./.github/actions/setup
+  #     - name: Setup
+  #       uses: ./.github/actions/setup
 
-      - name: Push changes and tags
-        run: |
-          git push origin main --follow-tags
+  #     - name: Build package
+  #       run: yarn build
 
-      - name: Build package
-        run: yarn build
-
-      - name: Publish package
-        run: yarn publish --registry https://npm.pkg.github.com
-        env:
-          NODE_AUTH_TOKEN: "$NPM_PUBLISH_ACCESS_TOKEN"
+  #     - name: Publish package
+  #       run: yarn publish --registry https://npm.pkg.github.com
+  #       env:
+  #         NODE_AUTH_TOKEN: "$NPM_PUBLISH_ACCESS_TOKEN"

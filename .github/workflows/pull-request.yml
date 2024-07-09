@@ -64,5 +64,5 @@ jobs:
     needs: unit-test
     with:
       coverage_percentage: ${{ needs.unit-test.outputs.coverage_percentage }}
-      badge_green_limit: 80
+      badge_green_limit: 90
       additional_artifacts: code-coverage

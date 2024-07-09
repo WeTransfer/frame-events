@@ -17,6 +17,7 @@ runs:
         registry-url: "https://npm.pkg.github.com"
         scope: "@wetransfer"
         token: ${{ inputs.GITHUB_TOKEN }}
+        fetch-depth: 0
 
     - name: Install dependencies
       run: yarn install

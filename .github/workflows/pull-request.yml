@@ -21,6 +21,8 @@ jobs:
 
       - name: Setup
         uses: ./.github/actions/setup
+        with:
+          env: ${{ env.GITHUB_TOKEN }}
 
       - name: Run linting
         run: yarn lint
@@ -33,6 +35,8 @@ jobs:
 
       - name: Setup
         uses: ./.github/actions/setup
+        with:
+          env: ${{ env.GITHUB_TOKEN }}
 
       - name: Run unit tests
         # run: yarn test

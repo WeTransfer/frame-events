@@ -15,6 +15,7 @@ on:
       - "**" # Allow the workflow to be triggered on any branch for testing
 
 permissions:
+  id-token: write
   packages: write
   contents: write
 
@@ -100,10 +101,9 @@ jobs:
 
       - name: Push changes and tags
         run: |
-          git add -A 
-          git commit -m "Bump version to ${{ env.NEW_VERSION }}"
+          git commit -am "Bump version to ${{ env.NEW_VERSION }}"
           git tag -a "v${{ env.NEW_VERSION }}" -m "Release version ${{ env.NEW_VERSION }}"
-          git push origin ${{ github.ref_name }} --follow-tags
+          git push -f origin ${{ github.ref_name }} --follow-tags
         shell: bash
         env:
           NEW_VERSION: ${{ env.NEW_VERSION }}

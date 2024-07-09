@@ -16,6 +16,8 @@ jobs:
     name: Linting
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Setup
         uses: ./.github/actions/setup
         with:
@@ -28,6 +30,8 @@ jobs:
     name: Unit Tests
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
       - name: Setup
         uses: ./.github/actions/setup
         with:

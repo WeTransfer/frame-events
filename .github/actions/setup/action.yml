@@ -1,8 +1,5 @@
 name: "Setup"
 
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 runs:
   using: "composite"
   steps:

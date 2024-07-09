@@ -12,7 +12,7 @@ on:
   push:
     branches:
       - main
-      - "**" # Allow the workflow to be triggered on any branch for testing
+      # - "**" # Allow the workflow to be triggered on any branch for testing
 
 permissions:
   packages: write

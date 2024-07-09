@@ -127,7 +127,12 @@ jobs:
       - name: Build package
         run: yarn build
 
+      - name: Another Step
+        run: |
+          echo "The new version is ${{ env.NEW_VERSION }}"
+        shell: bash
+
       - name: Publish package
-        run: yarn publish --tag ${{ env.NEW_VERSION }}" --registry https://npm.pkg.github.com --access public
+        run: yarn publish --tag "${{ env.NEW_VERSION }}" --registry https://npm.pkg.github.com --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_ACCESS_TOKEN }}

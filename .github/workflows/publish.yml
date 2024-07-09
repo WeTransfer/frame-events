@@ -90,6 +90,10 @@ jobs:
           # Bump version using yarn version
           yarn version --patch
 
+          # Verify changes
+          git status
+          cat package.json
+
           # Extract the new version
           echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
         shell: bash

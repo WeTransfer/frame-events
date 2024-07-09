@@ -1,0 +1,62 @@
+name: "Pull Request Workflow"
+
+env:
+  WT_GITHUB_TOKEN: ${{ secrets.WT_GITHUB_PACKAGES_RO }}
+  GITHUB_TOKEN: ${{ secrets.WT_GITHUB_PACKAGES_RO }}
+
+on:
+  pull_request:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  linting:
+    name: Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node-version: "20"
+
+      - name: Run linting
+        run: yarn lint
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node-version: "20"
+
+      - name: Run unit tests
+        # run: yarn test
+        run: |
+          mkdir -p ./coverage &&
+          touch ./coverage/summary.txt &&
+          yarn test:coverage >> ./coverage/summary.txt
+
+      - name: Retrieve code coverage
+        id: code_coverage
+        run: |
+          echo "Total coverage: $(grep -oE '[0-9]+\.[0-9]+%' -m 1 ./coverage/summary.txt | cut -d '.' -f1)% of statements" &&
+          echo "coverage_percentage=$(grep -oE '[0-9]+\.[0-9]+%' -m 1 ./coverage/summary.txt | cut -d '.' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload Coverage Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: code-coverage
+          path: coverage
+
+  upload_coverage:
+    name: Code Coverage
+    uses: WeTransfer/gha-workflows/.github/workflows/upload_coverage.yml@main
+    needs: unit-test
+    with:
+      coverage_percentage: ${{ needs.unit-test.outputs.coverage_percentage }}
+      badge_green_limit: 80
+      additional_artifacts: code-coverage

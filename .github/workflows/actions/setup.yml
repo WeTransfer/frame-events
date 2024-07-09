@@ -1,0 +1,22 @@
+name: "Setup"
+
+inputs:
+  node-version:
+    description: "Node.js version"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node-version }}
+        registry-url: "https://npm.pkg.github.com"
+        scope: "@wetransfer"
+
+    - name: Install dependencies
+      run: yarn install

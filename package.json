@@ -1,11 +1,14 @@
 {
-  "name": "frame-events",
+  "name": "@wetransfer/frame-events",
   "version": "1.0.0",
   "type": "commonjs",
   "license": "MIT",
   "engines": {
     "node": ">=19.0.0"
   },
+  "files": [
+    "build"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/WeTransfer/frame-events.git"

@@ -69,9 +69,17 @@ jobs:
           echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
         shell: bash
 
-      - name: Push changes and tags
-        run: |
-          git push origin main --follow-tags
+      # - name: Push changes and tags
+      #   run: |
+      #     git push origin main --follow-tags
+
+  upload_coverage:
+    name: Code Coverage
+    uses: WeTransfer/gha-workflows/.github/workflows/upload_coverage.yml@main
+    needs: unit-test
+    with:
+      coverage_percentage: ${{ needs.unit-test.outputs.coverage_percentage }}
+      badge_green_limit: 90
 
   publish:
     name: Publish Package
@@ -94,12 +102,3 @@ jobs:
         run: yarn publish --registry https://npm.pkg.github.com
         env:
           NODE_AUTH_TOKEN: "$NPM_PUBLISH_ACCESS_TOKEN"
-
-  # upload_coverage:
-  #   name: Code Coverage
-  #   uses: WeTransfer/gha-workflows/.github/workflows/upload_coverage.yml@main
-  #   needs: unit-test
-  #   with:
-  #     coverage_percentage: ${{ needs.unit-test.outputs.coverage_percentage }}
-  #     badge_green_limit: 90
-  #     additional_artifacts: code-coverage

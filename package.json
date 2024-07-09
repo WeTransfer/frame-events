@@ -1,6 +1,6 @@
 {
   "name": "@wetransfer/frame-events",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "type": "commonjs",
   "license": "MIT",
   "engines": {
@@ -23,7 +23,10 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.ts",
-    "lint:fix": "eslint src/**/*.ts --fix"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "version:patch": "yarn version --patch",
+    "version:minor": "yarn version --minor",
+    "version:major": "yarn version --major"
   },
   "devDependencies": {
     "@eslint/compat": "^1.1.0",

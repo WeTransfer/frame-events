@@ -53,46 +53,11 @@ jobs:
     needs: [linting, unit-test]
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref_name }} # Use the current branch name
-          fetch-depth: 0
 
       - name: Setup
         uses: ./.github/actions/setup
         with:
           env: ${{ env.GITHUB_TOKEN }}
-
-      # - name: Setup git permissions
-      #   run: |
-      #     git config --global user.name "wetransferplatform"
-      #     git config --global user.email "platform+github@wetransfer.com"
-      #     git config --global user.signingkey "$WETRANSFERPLATFORM_GPG_KEYID"
-      #     git config --global commit.gpgsign true
-      #   shell: bash
-      #   env:
-      #     WETRANSFERPLATFORM_GPG_KEYID: ${{ secrets.WETRANSFERPLATFORM_GPG_KEYID }}
-
-      # - name: Import GPG key
-      #   run: |
-      #     echo "$WETRANSFERPLATFORM_GPG_KEY" | gpg --batch --import
-      #   env:
-      #     WETRANSFERPLATFORM_GPG_KEY: ${{ secrets.WETRANSFERPLATFORM_GPG_KEY }}
-      #   shell: bash
-
-      # - name: Trust imported GPG key
-      #   run: |
-      #     KEY_ID=$(gpg --list-keys --with-colons | grep '^pub' | cut -d':' -f5)
-      #     echo -e "trust\n5\ny\n" | gpg --command-fd 0 --batch --edit-key $KEY_ID
-      #   shell: bash
-
-      # - name: Push changes and tags
-      #   run: |
-      #     git commit -am "Bump version to ${{ env.NEW_VERSION }}"
-      #     git tag -a "v${{ env.NEW_VERSION }}" -m "Release version ${{ env.NEW_VERSION }}"
-      #     git push -f origin ${{ github.ref_name }} --follow-tags
-      #   shell: bash
-      #   env:
-      #     NEW_VERSION: ${{ env.NEW_VERSION }}
 
   publish:
     name: Publish Package
@@ -112,40 +77,9 @@ jobs:
       - name: Build package
         run: yarn build
 
-      - name: Setup git permissions
+      - name: Determine package metadata
         run: |
-          git config --global user.name "wetransferplatform"
-          git config --global user.email "platform+github@wetransfer.com"
-          git config --global user.signingkey "$WETRANSFERPLATFORM_GPG_KEYID"
-          git config --global commit.gpgsign true
-        shell: bash
-        env:
-          WETRANSFERPLATFORM_GPG_KEYID: ${{ secrets.WETRANSFERPLATFORM_GPG_KEYID }}
-
-      - name: Import GPG key
-        run: |
-          echo "$WETRANSFERPLATFORM_GPG_KEY" | gpg --batch --import
-        env:
-          WETRANSFERPLATFORM_GPG_KEY: ${{ secrets.WETRANSFERPLATFORM_GPG_KEY }}
-        shell: bash
-
-      - name: Trust imported GPG key
-        run: |
-          KEY_ID=$(gpg --list-keys --with-colons | grep '^pub' | cut -d':' -f5)
-          echo -e "trust\n5\ny\n" | gpg --command-fd 0 --batch --edit-key $KEY_ID
-        shell: bash
-
-      - name: Bump version
-        id: version
-        run: |
-          yarn version --patch
-
-          # Verify changes
-          git status
-          cat package.json
-
           echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
-
           echo "PACKAGE_NAME=$(node -p -e "require('./package.json').name")" >> $GITHUB_ENV
         shell: bash
 
@@ -154,7 +88,3 @@ jobs:
 
       - name: Update latest tag
         run: NODE_AUTH_TOKEN="$NPM_PUBLISH_ACCESS_TOKEN" npm dist-tag add ${{env.PACKAGE_NAME}}@${{ env.NEW_VERSION }} latest
-
-        # run: yarn publish --tag "${{ env.NEW_VERSION }}" --registry https://npm.pkg.github.com --access public
-        # env:
-        #   NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_ACCESS_TOKEN }}

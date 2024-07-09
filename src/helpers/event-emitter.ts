@@ -5,7 +5,7 @@
  * @interface SubscriberCallback
  */
 export interface SubscriberCallback {
-  (...args: any[]): void;
+  (...args: unknown[]): void;
 }
 
 /**
@@ -73,7 +73,7 @@ export default class Events {
    * @param {...any[]} args - The arguments to be passed to the callbacks.
    * @return {void}
    */
-  emit(event: string, ...args: any[]): void {
+  emit(event: string, ...args: unknown[]): void {
     if (!this.subscribers[event]) return;
     this.subscribers[event].forEach((subscriberCallback: SubscriberCallback) =>
       subscriberCallback(...args)

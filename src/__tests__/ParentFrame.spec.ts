@@ -250,7 +250,7 @@ describe("ParentFrame", () => {
       });
 
       expect(() => {
-        (padre as any).parseMessage(event);
+        (padre as ParentFrame).parseMessage(event);
       }).toThrow(ERROR_MESSAGES.INVALID_MESSAGE_FORMAT);
     });
 

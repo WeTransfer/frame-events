@@ -96,7 +96,7 @@ jobs:
 
       - name: Push changes and tags
         run: |
-          git add --all
+          git add package.json yarn.lock
           git commit -m "Bump version to ${{ env.NEW_VERSION }}"
           git tag -a "v${{ env.NEW_VERSION }}" -m "Release version ${{ env.NEW_VERSION }}"
           git push origin ${{ github.ref_name }} --follow-tags

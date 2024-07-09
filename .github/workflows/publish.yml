@@ -89,7 +89,7 @@ jobs:
         id: version
         run: |
           # Bump version using yarn version
-          npm version --patch
+          yarn version --patch
 
           # Verify changes
           git status

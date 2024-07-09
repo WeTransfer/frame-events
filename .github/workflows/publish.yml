@@ -133,7 +133,7 @@ jobs:
         shell: bash
 
       - name: Publish package
-        run: NODE_AUTH_TOKEN="$NPM_PUBLISH_ACCESS_TOKEN" --tag "${{ env.NEW_VERSION }}"  --access private
+        run: NODE_AUTH_TOKEN="$NPM_PUBLISH_ACCESS_TOKEN" yarn publish --tag "${{ env.NEW_VERSION }}"  --access private
         # run: yarn publish --tag "${{ env.NEW_VERSION }}" --registry https://npm.pkg.github.com --access public
         # env:
         #   NODE_AUTH_TOKEN: ${{ secrets.NPM_PUBLISH_ACCESS_TOKEN }}

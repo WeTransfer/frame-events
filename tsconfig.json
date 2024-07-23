@@ -20,12 +20,5 @@
     "baseUrl": ".",
     "types": ["jest", "node"]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": [
-    "node_modules",
-    "build",
-    "coverage",
-    "jest.config.ts",
-    "eslint.config.mjs"
-  ]
+  "include": ["src/**/*.ts"]
 }

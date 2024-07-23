@@ -1,6 +1,6 @@
 /**
- *
  * A callback function that handles emitted events.
+ *
  * @param args - The arguments passed to the callback function.
  * @interface SubscriberCallback
  */
@@ -9,8 +9,8 @@ export interface SubscriberCallback {
 }
 
 /**
- *
  * An object containing subscribers for different events.
+ *
  * @interface Subscribers
  */
 export interface Subscribers {

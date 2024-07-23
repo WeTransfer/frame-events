@@ -47,7 +47,7 @@ export default class Events {
    */
   on(
     event: string,
-    callback: SubscriberCallback
+    callback: SubscriberCallback,
   ): {
     off: () => void;
   } {
@@ -60,7 +60,7 @@ export default class Events {
     return {
       off: () => {
         this.subscribers[event] = this.subscribers[event].filter(
-          (sub) => sub !== callback
+          (sub) => sub !== callback,
         );
       },
     };
@@ -76,7 +76,7 @@ export default class Events {
   emit(event: string, ...args: unknown[]): void {
     if (!this.subscribers[event]) return;
     this.subscribers[event].forEach((subscriberCallback: SubscriberCallback) =>
-      subscriberCallback(...args)
+      subscriberCallback(...args),
     );
   }
 }

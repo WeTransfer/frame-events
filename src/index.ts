@@ -1,11 +1,11 @@
-import ParentFrame from "./ParentFrame";
-import ChildFrame from "./ChildFrame";
+import ParentFrame from './ParentFrame';
+import ChildFrame from './ChildFrame';
 import {
   FrameEvent,
   InitialFrameEvent,
   ParentFrameMethods,
   ParentFrameOptions,
-} from "./types";
+} from './types';
 
 export {
   ParentFrame,

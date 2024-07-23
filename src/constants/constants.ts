@@ -1,1 +1,1 @@
-export const RESERVED_READY_COMMAND = "ready";
+export const RESERVED_READY_COMMAND = 'ready';

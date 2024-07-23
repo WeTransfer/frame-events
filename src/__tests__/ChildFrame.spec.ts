@@ -1,27 +1,27 @@
-import { InitialFrameEvent } from "src/types";
-import ChildFrame from "../ChildFrame";
-import ERROR_MESSAGES from "../constants/error-messages";
-import Events from "../helpers/event-emitter";
-import { loadScriptTags } from "../helpers/load-script-tags";
+import { InitialFrameEvent } from 'src/types';
+import ChildFrame from '../ChildFrame';
+import ERROR_MESSAGES from '../constants/error-messages';
+import Events from '../helpers/event-emitter';
+import { loadScriptTags } from '../helpers/load-script-tags';
 
-jest.mock("../helpers/event-emitter");
-jest.mock("../helpers/load-script-tags");
+jest.mock('../helpers/event-emitter');
+jest.mock('../helpers/load-script-tags');
 
-describe("ChildFrame", () => {
+describe('ChildFrame', () => {
   const originalLocation = window.location;
 
-  describe("construct", () => {
+  describe('construct', () => {
     afterAll(() => {
       jest.restoreAllMocks();
     });
 
-    it("should throw an error if no origin is present in the URL", () => {
+    it('should throw an error if no origin is present in the URL', () => {
       const mockLocation = {
         ...originalLocation,
-        search: "?_placement=myParentPlacement",
+        search: '?_placement=myParentPlacement',
       };
 
-      Object.defineProperty(window, "location", {
+      Object.defineProperty(window, 'location', {
         configurable: true,
         writable: true,
         value: mockLocation,
@@ -32,13 +32,13 @@ describe("ChildFrame", () => {
       }).toThrow(ERROR_MESSAGES.CANT_VALIDATE_ORIGIN);
     });
 
-    it("should throw an error if no placement is present is the URL", () => {
+    it('should throw an error if no placement is present is the URL', () => {
       const mockLocation = {
         ...originalLocation,
-        search: "?_origin=http://parent:1",
+        search: '?_origin=http://parent:1',
       };
 
-      Object.defineProperty(window, "location", {
+      Object.defineProperty(window, 'location', {
         configurable: true,
         writable: true,
         value: mockLocation,
@@ -49,13 +49,13 @@ describe("ChildFrame", () => {
       }).toThrow(ERROR_MESSAGES.CANT_VALIDATE_PLACEMENT);
     });
 
-    it("should get the parent origin from the URL", () => {
+    it('should get the parent origin from the URL', () => {
       const mockLocation = {
         ...originalLocation,
-        search: "?_origin=http://parent:1&_placement=myParentPlacement",
+        search: '?_origin=http://parent:1&_placement=myParentPlacement',
       };
 
-      Object.defineProperty(window, "location", {
+      Object.defineProperty(window, 'location', {
         configurable: true,
         writable: true,
         value: mockLocation,
@@ -63,28 +63,28 @@ describe("ChildFrame", () => {
 
       const childFrame = new ChildFrame(jest.fn);
 
-      expect(childFrame.endpoint).toBe("http://parent:1");
+      expect(childFrame.endpoint).toBe('http://parent:1');
     });
 
-    it("should start listening for message events", () => {
-      jest.spyOn(window, "addEventListener");
+    it('should start listening for message events', () => {
+      jest.spyOn(window, 'addEventListener');
       new ChildFrame(jest.fn);
 
       expect(window.addEventListener).toHaveBeenCalledTimes(1);
       expect(window.addEventListener).toHaveBeenCalledWith(
-        "message",
-        expect.any(Function)
+        'message',
+        expect.any(Function),
       );
     });
 
-    it("should define a parent placement", () => {
+    it('should define a parent placement', () => {
       const childFrame = new ChildFrame(jest.fn);
 
-      expect(childFrame.parentPlacement).toBe("myParentPlacement");
+      expect(childFrame.parentPlacement).toBe('myParentPlacement');
     });
   });
 
-  describe("receiveEvent method", () => {
+  describe('receiveEvent method', () => {
     let event: MessageEvent;
     let parseMessageMock: jest.SpyInstance;
     let onParentReadyMock: jest.SpyInstance;
@@ -92,108 +92,108 @@ describe("ChildFrame", () => {
     let emitEventSpy: jest.SpyInstance;
 
     beforeAll(() => {
-      parseMessageMock = jest.spyOn(ChildFrame.prototype, "parseMessage");
+      parseMessageMock = jest.spyOn(ChildFrame.prototype, 'parseMessage');
       parseMessageMock.mockImplementation(() => Promise.resolve());
-      onParentReadyMock = jest.spyOn(ChildFrame.prototype, "onParentReady");
+      onParentReadyMock = jest.spyOn(ChildFrame.prototype, 'onParentReady');
       onParentReadyMock.mockImplementation(() => Promise.resolve());
-      consoleErrorSpy = jest.spyOn(console, "error");
+      consoleErrorSpy = jest.spyOn(console, 'error');
       consoleErrorSpy.mockImplementation(() => {});
-      emitEventSpy = jest.spyOn(Events.prototype, "emit");
+      emitEventSpy = jest.spyOn(Events.prototype, 'emit');
 
-      event = new MessageEvent("message");
+      event = new MessageEvent('message');
     });
 
     afterAll(() => {
       jest.restoreAllMocks();
     });
 
-    it("should reject events not coming from the parent", () => {
+    it('should reject events not coming from the parent', () => {
       global.dispatchEvent(event);
 
       expect(parseMessageMock).not.toHaveBeenCalled();
     });
 
-    it("should try to parse the message", () => {
-      jest.spyOn(event, "origin", "get").mockReturnValueOnce("http://parent:1");
+    it('should try to parse the message', () => {
+      jest.spyOn(event, 'origin', 'get').mockReturnValueOnce('http://parent:1');
       global.dispatchEvent(event);
 
       expect(parseMessageMock).toHaveBeenCalled();
     });
 
-    it("should log parsing errors", () => {
+    it('should log parsing errors', () => {
       parseMessageMock.mockImplementationOnce(() => {
-        throw new Error("Parsing error");
+        throw new Error('Parsing error');
       });
-      jest.spyOn(event, "origin", "get").mockReturnValueOnce("http://parent:1");
+      jest.spyOn(event, 'origin', 'get').mockReturnValueOnce('http://parent:1');
       global.dispatchEvent(event);
 
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        "Error processing event:",
-        new Error("Parsing error")
+        'Error processing event:',
+        new Error('Parsing error'),
       );
     });
 
-    it("should not emit an internal event if the message comes from a different placement", () => {
+    it('should not emit an internal event if the message comes from a different placement', () => {
       parseMessageMock.mockReturnValueOnce({
         payload: {},
-        command: "myCommand",
-        parentPlacement: "otherPlacement",
+        command: 'myCommand',
+        parentPlacement: 'otherPlacement',
       });
 
-      jest.spyOn(event, "origin", "get").mockReturnValueOnce("http://parent:1");
+      jest.spyOn(event, 'origin', 'get').mockReturnValueOnce('http://parent:1');
       global.dispatchEvent(event);
 
       expect(emitEventSpy).not.toHaveBeenCalled();
     });
 
-    it("should emit an internal event", () => {
+    it('should emit an internal event', () => {
       parseMessageMock.mockReturnValueOnce({
         payload: {},
-        command: "myCommand",
-        parentPlacement: "myParentPlacement",
+        command: 'myCommand',
+        parentPlacement: 'myParentPlacement',
       });
-      jest.spyOn(event, "origin", "get").mockReturnValueOnce("http://parent:1");
+      jest.spyOn(event, 'origin', 'get').mockReturnValueOnce('http://parent:1');
       global.dispatchEvent(event);
 
-      expect(emitEventSpy).toHaveBeenCalledWith("myCommand", {});
+      expect(emitEventSpy).toHaveBeenCalledWith('myCommand', {});
     });
 
-    it("should fire the onParentReady callback if the event is the default ready event", () => {
+    it('should fire the onParentReady callback if the event is the default ready event', () => {
       parseMessageMock.mockReturnValueOnce({
-        command: "ready",
-        parentPlacement: "myParentPlacement",
+        command: 'ready',
+        parentPlacement: 'myParentPlacement',
       });
-      jest.spyOn(event, "origin", "get").mockReturnValueOnce("http://parent:1");
-      jest.spyOn(event, "data", "get").mockReturnValueOnce("event:data");
+      jest.spyOn(event, 'origin', 'get').mockReturnValueOnce('http://parent:1');
+      jest.spyOn(event, 'data', 'get').mockReturnValueOnce('event:data');
       global.dispatchEvent(event);
 
-      expect(onParentReadyMock).toHaveBeenCalledWith("event:data");
+      expect(onParentReadyMock).toHaveBeenCalledWith('event:data');
     });
   });
 
-  describe("parseMessage method", () => {
+  describe('parseMessage method', () => {
     let childFrame: InstanceType<typeof ChildFrame>;
     let event: MessageEvent;
 
     beforeAll(() => {
       const mockLocation = {
         ...originalLocation,
-        search: "?_origin=http://parent:1&_placement=myParentPlacement",
+        search: '?_origin=http://parent:1&_placement=myParentPlacement',
       };
 
-      Object.defineProperty(window, "location", {
+      Object.defineProperty(window, 'location', {
         configurable: true,
         writable: true,
         value: mockLocation,
       });
 
       childFrame = new ChildFrame(jest.fn);
-      event = new MessageEvent("message");
-      jest.spyOn(event, "data", "get").mockReturnValue({
-        command: "ready",
+      event = new MessageEvent('message');
+      jest.spyOn(event, 'data', 'get').mockReturnValue({
+        command: 'ready',
         payload: {},
-        placement: "myParentPlacement",
+        placement: 'myParentPlacement',
       });
     });
 
@@ -201,32 +201,32 @@ describe("ChildFrame", () => {
       jest.restoreAllMocks();
     });
 
-    it("should parse the message", async () => {
+    it('should parse the message', async () => {
       const { payload, command, parentPlacement } =
         childFrame.parseMessage(event);
 
-      expect(command).toEqual("ready");
+      expect(command).toEqual('ready');
       expect(payload).toEqual({});
-      expect(parentPlacement).toEqual("myParentPlacement");
+      expect(parentPlacement).toEqual('myParentPlacement');
     });
 
-    it("should parse the message and return empty on default", async () => {
-      jest.spyOn(event, "data", "get").mockReturnValue({
-        command: "",
+    it('should parse the message and return empty on default', async () => {
+      jest.spyOn(event, 'data', 'get').mockReturnValue({
+        command: '',
         payload: {},
-        placement: "",
+        placement: '',
       });
 
       const { payload, command, parentPlacement } =
         childFrame.parseMessage(event);
 
-      expect(command).toEqual("");
+      expect(command).toEqual('');
       expect(payload).toMatchObject({});
-      expect(parentPlacement).toEqual("");
+      expect(parentPlacement).toEqual('');
     });
   });
 
-  describe("onParentReady method", () => {
+  describe('onParentReady method', () => {
     let childFrame: ChildFrame;
     const callbackMock = jest.fn();
     let payload: InitialFrameEvent;
@@ -236,16 +236,16 @@ describe("ChildFrame", () => {
     beforeAll(() => {
       childFrame = new ChildFrame(callbackMock);
       payload = {
-        availableMethods: ["method1", "method2"],
-        availableListeners: ["myListener"],
-        command: "",
+        availableMethods: ['method1', 'method2'],
+        availableListeners: ['myListener'],
+        command: '',
         payload: {},
-        placement: "myParentPlacement",
+        placement: 'myParentPlacement',
         scripts: ['<script src="https://example.com/script.js"></script>'],
       };
 
-      eventEmitterOnSpy = jest.spyOn(childFrame.eventEmitter, "on");
-      sendCommandSpy = jest.spyOn(childFrame, "sendCommand");
+      eventEmitterOnSpy = jest.spyOn(childFrame.eventEmitter, 'on');
+      sendCommandSpy = jest.spyOn(childFrame, 'sendCommand');
 
       childFrame.onParentReady(payload);
     });
@@ -254,7 +254,7 @@ describe("ChildFrame", () => {
       jest.restoreAllMocks();
     });
 
-    it("should add available event listeners", () => {
+    it('should add available event listeners', () => {
       if (payload.availableListeners) {
         // expect(eventEmitterOnSpy).toHaveBeenCalledTimes(
         //   payload.availableListeners.length
@@ -276,7 +276,7 @@ describe("ChildFrame", () => {
       }
     });
 
-    it("should register available methods", () => {
+    it('should register available methods', () => {
       if (payload.availableMethods) {
         payload.availableMethods.forEach((method) => {
           expect(childFrame.run[method]).toBeDefined();
@@ -288,28 +288,28 @@ describe("ChildFrame", () => {
       }
     });
 
-    it("should fire the init callback", () => {
+    it('should fire the init callback', () => {
       expect(callbackMock).toHaveBeenCalledTimes(1);
       expect(callbackMock).toHaveBeenCalledWith(payload);
     });
 
-    it("should pass the scripts to the helper method", () => {
+    it('should pass the scripts to the helper method', () => {
       expect(loadScriptTags).toHaveBeenCalledTimes(1);
       expect(loadScriptTags).toHaveBeenCalledWith(payload.scripts);
     });
   });
 
-  describe("sendCommand method", () => {
+  describe('sendCommand method', () => {
     let childFrame: InstanceType<typeof ChildFrame>;
     const callbackMock = jest.fn();
 
     beforeAll(() => {
       const mockLocation = {
         ...originalLocation,
-        search: "?_origin=http://parent:1&_placement=myParentPlacement",
+        search: '?_origin=http://parent:1&_placement=myParentPlacement',
       };
 
-      Object.defineProperty(window, "location", {
+      Object.defineProperty(window, 'location', {
         configurable: true,
         writable: true,
         value: mockLocation,
@@ -322,17 +322,17 @@ describe("ChildFrame", () => {
       jest.restoreAllMocks();
     });
 
-    it("should post a message", () => {
-      childFrame.sendCommand("myCommand", {});
+    it('should post a message', () => {
+      childFrame.sendCommand('myCommand', {});
 
       expect(window.parent.postMessage).toHaveBeenCalledTimes(1);
       expect(window.parent.postMessage).toHaveBeenCalledWith(
         {
-          command: "myCommand",
+          command: 'myCommand',
           payload: {},
-          placement: "myParentPlacement",
+          placement: 'myParentPlacement',
         },
-        "http://parent:1"
+        'http://parent:1',
       );
     });
   });

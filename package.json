@@ -29,7 +29,7 @@
     "version:major": "yarn version --major"
   },
   "lint-staged": {
-    "src/*.{ts,tsx}": [
+    "**/*.{ts}": [
       "eslint --fix",
       "prettier --write"
     ]

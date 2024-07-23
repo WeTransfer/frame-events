@@ -2,7 +2,7 @@ import { RESERVED_READY_COMMAND } from './constants/constants';
 import ERROR_MESSAGES from './constants/error-messages';
 import Events, { SubscriberCallback } from './helpers/event-emitter';
 import { FrameEvent, InitialFrameEvent, ParentFrameOptions } from './types';
-
+////
 /**
  * ParentFrame is responsible for sending events to the child frame
  *

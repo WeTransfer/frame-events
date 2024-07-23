@@ -1,12 +1,8 @@
 import ERROR_MESSAGES from './constants/error-messages';
 import Events, { SubscriberCallback } from './helpers/event-emitter';
 import { loadScriptTags } from './helpers/load-script-tags';
-import { InitialFrameEvent } from './types';
+import { InitialFrameEvent, ListenerFunction, RunFunction } from './types';
 import { RESERVED_READY_COMMAND } from './constants/constants';
-
-type ListenerFunction = (fn: SubscriberCallback) => void;
-
-type RunFunction = (data: unknown) => void;
 
 /**
  * A class for handling communication between the parent and child frames.

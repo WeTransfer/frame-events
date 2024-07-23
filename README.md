@@ -6,11 +6,7 @@ Frame Events is a library for establishing secure parent and child 2-way communi
 
 The library consists of two classes, `ParentFrame`, to be instantiated in the parent document and `ChildFrame`, to be run in the embedded document. They both make use of the `Window.postMessage()` method and the `onmessage` event handler.
 
-[Receiver and emitter diagram](./docs/event_flow.drawio)
-
 When a ParentFrame instance defines an interface it sends a ready event to the ChildFrame instance in the embedded document. When the ChildFrame instance receives the ready event it runs the subscriber callback.
-
-[Subscriber callback diagram](./docs/subscriber_callback.drawio)
 
 ## Using ParentFrame
 
@@ -80,16 +76,16 @@ const state = {
   counter: 0,
 };
 const myAPI = new ParentFrame({
-  child: document.querySelector("iframe"),
+  child: document.querySelector('iframe'),
   methods: {
     updateCounter: function () {
       state.counter = state.counter++;
-      this.send("counterUpdated", {
+      this.send('counterUpdated', {
         counter: state.counter,
       });
     },
   },
-  listeners: ["counterUpdated"],
+  listeners: ['counterUpdated'],
   scripts: ['<script src=""></script>', '<script src=""></script>'],
 });
 ```
@@ -113,7 +109,7 @@ const myChildAPI = new ChildFrame(function (data) {
   myChildAPI.listeners.counterUpdated((event) => {});
 
   // Fire commands
-  document.querySelector("button").addEventListener("click", function () {
+  document.querySelector('button').addEventListener('click', function () {
     myChildAPI.run.updateCounter();
   });
 });

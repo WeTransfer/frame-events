@@ -1,3 +1,5 @@
+import { SubscriberCallback } from '../helpers/event-emitter';
+
 export interface ParentFrameMethods {
   [key: string]: (...args: never[]) => void;
 }
@@ -20,3 +22,11 @@ export interface InitialFrameEvent extends FrameEvent {
   scripts?: string[];
   placement: string;
 }
+
+export interface EventSubscription {
+  off(): void;
+}
+
+export type ListenerFunction = (fn: SubscriberCallback) => void;
+
+export type RunFunction = (data: unknown) => void;

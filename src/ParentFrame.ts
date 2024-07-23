@@ -1,8 +1,12 @@
 import { RESERVED_READY_COMMAND } from './constants/constants';
 import ERROR_MESSAGES from './constants/error-messages';
 import Events, { SubscriberCallback } from './helpers/event-emitter';
-import { FrameEvent, InitialFrameEvent, ParentFrameOptions } from './types';
-////
+import {
+  EventSubscription,
+  FrameEvent,
+  InitialFrameEvent,
+  ParentFrameOptions,
+} from './types';
 /**
  * ParentFrame is responsible for sending events to the child frame
  *
@@ -72,7 +76,7 @@ export default class ParentFrame {
    * @type {unknown[]}
    * @memberof ParentFrame
    */
-  readonly events: unknown[] = [];
+  readonly events: EventSubscription[] = [];
 
   /**
    * An event emitter
@@ -126,7 +130,7 @@ export default class ParentFrame {
 
       const event = this.eventEmitter.on(
         command,
-        methods[command] as SubscriberCallback
+        methods[command] as SubscriberCallback,
       );
 
       this.events.push(event);
@@ -194,7 +198,7 @@ export default class ParentFrame {
    */
   buildEventPayload(
     command: string,
-    payload: unknown
+    payload: unknown,
   ): FrameEvent | InitialFrameEvent {
     const result: InitialFrameEvent = {
       command,
@@ -251,7 +255,7 @@ export default class ParentFrame {
    */
   public destroy(): void {
     window.removeEventListener('message', this.receiveEvent.bind(this));
-    this.events.forEach((event: any) => {
+    this.events.forEach((event: EventSubscription) => {
       event.off();
     });
   }

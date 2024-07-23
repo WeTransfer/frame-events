@@ -4,6 +4,11 @@ import { loadScriptTags } from './helpers/load-script-tags';
 import { InitialFrameEvent } from './types';
 import { RESERVED_READY_COMMAND } from './constants/constants';
 
+//testing
+type ListenerFunction = (fn: SubscriberCallback) => void;
+
+type RunFunction = (data: unknown) => void;
+
 /**
  * A class for handling communication between the parent and child frames.
  *
@@ -33,14 +38,14 @@ export default class ChildFrame {
    *
    * @memberof ChildFrame
    */
-  readonly listeners: { [key: string]: (...args: any[]) => void };
+  readonly listeners: { [key: string]: ListenerFunction };
 
   /**
    * The run function of the parent frame.
    *
    * @memberof ChildFrame
    */
-  readonly run: { [key: string]: (...args: any[]) => void };
+  readonly run: { [key: string]: RunFunction };
 
   /**
    * The placement of the parent frame.

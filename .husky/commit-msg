@@ -1,6 +1,8 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
+echo "Running commmit-message hook..."
+
 # code to make this working in VScode with NVM https://stackoverflow.com/a/68687701/5869296
 export NVM_DIR="$HOME/.nvm/nvm.sh"
 . "$(dirname $NVM_DIR)/nvm.sh"

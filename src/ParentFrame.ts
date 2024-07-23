@@ -7,6 +7,7 @@ import {
   InitialFrameEvent,
   ParentFrameOptions,
 } from './types';
+
 /**
  * ParentFrame is responsible for sending events to the child frame
  *

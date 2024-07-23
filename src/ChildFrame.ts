@@ -4,7 +4,6 @@ import { loadScriptTags } from './helpers/load-script-tags';
 import { InitialFrameEvent } from './types';
 import { RESERVED_READY_COMMAND } from './constants/constants';
 
-//testing
 type ListenerFunction = (fn: SubscriberCallback) => void;
 
 type RunFunction = (data: unknown) => void;
@@ -86,7 +85,7 @@ export default class ChildFrame {
 
     this.eventEmitter.on(
       RESERVED_READY_COMMAND,
-      this.onParentReady.bind(this) as SubscriberCallback
+      this.onParentReady.bind(this) as SubscriberCallback,
     );
 
     this.listeners = {};

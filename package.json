@@ -18,7 +18,6 @@
     "registry": "https://npm.pkg.github.com"
   },
   "scripts": {
-    "prepare": "husky install",
     "build": "tsc",
     "test": "jest",
     "test:watch": "jest --watch",

@@ -1,47 +1,107 @@
+import { RESERVED_READY_COMMAND } from './constants/constants';
 import ERROR_MESSAGES from './constants/error-messages';
 import Events, { SubscriberCallback } from './helpers/event-emitter';
+import {
+  EventSubscription,
+  FrameEvent,
+  InitialFrameEvent,
+  ParentFrameOptions,
+} from './types';
 
-export interface ParentFrameMethods {
-  [key: string]: (...args: never[]) => void;
-}
-
-export interface ParentFrameOptions {
-  childFrameNode: HTMLIFrameElement;
-  methods?: ParentFrameMethods;
-  listeners?: string[];
-  scripts?: string[];
-}
-
-export interface FrameEvent<Payload = unknown> {
-  command: string;
-  payload: Payload;
-}
-
-export interface InitialFrameEvent extends FrameEvent {
-  availableListeners: string[] | null;
-  availableMethods: string[] | null;
-  scripts?: string[];
-  placement: string;
-}
-
-export const RESERVED_READY_COMMAND = 'ready';
-
+/**
+ * ParentFrame is responsible for sending events to the child frame
+ *
+ * @export
+ * @class ParentFrame
+ */
 export default class ParentFrame {
+  /**
+   * A reference to the child frame
+   *
+   * @type {HTMLIFrameElement}
+   * @memberof ParentFrame
+   */
   readonly child: HTMLIFrameElement;
+
+  /**
+   * The URL of the creative
+   *
+   * @type {URL}
+   * @memberof ParentFrame
+   */
   readonly creativeUrl: URL;
+
+  /**
+   * The origin of the parent
+   *
+   * @type {string}
+   * @memberof ParentFrame
+   */
   readonly origin: string;
+
+  /**
+   * A list of listeners
+   *
+   * @type {(string[] | null)}
+   * @memberof ParentFrame
+   */
   readonly listeners: string[] | null;
+
+  /**
+   * A list of methods
+   *
+   * @type {string[]}
+   * @memberof ParentFrame
+   */
   readonly methods: string[];
+
+  /**
+   * A list of scripts
+   *
+   * @type {string[]}
+   * @memberof ParentFrame
+   */
   readonly scripts?: string[];
+
+  /**
+   * The name of the placement
+   *
+   * @type {string}
+   * @memberof ParentFrame
+   */
   readonly placement: string;
-  readonly events: unknown[] = [];
+
+  /**
+   * A list of events
+   *
+   * @type {unknown[]}
+   * @memberof ParentFrame
+   */
+  readonly events: EventSubscription[] = [];
+
+  /**
+   * An event emitter
+   *
+   * @type {Events}
+   * @memberof ParentFrame
+   */
   readonly eventEmitter: Events = new Events();
 
+  /**
+   * Creates an instance of ParentFrame.
+   * @param {ParentFrameOptions} {
+   *     childFrameNode,
+   *     listeners = [],
+   *     methods = {},
+   *     scripts = [],
+   *   }
+   * @memberof ParentFrame
+   */
   constructor({
     childFrameNode,
-    listeners,
+    listeners = [],
     methods = {},
-    scripts,
+    scripts = [],
   }: ParentFrameOptions) {
     if (!childFrameNode.src) {
       throw new Error(ERROR_MESSAGES.EMPTY_IFRAME);
@@ -53,88 +113,120 @@ export default class ParentFrame {
     // A placement name must be defined in the embedded document source
     const urlParams = new URLSearchParams(this.child.src);
     this.placement = urlParams.get('_placement') || '';
-    if (!this.placement || this.placement === '') {
+    if (!this.placement) {
       throw new Error(ERROR_MESSAGES.CANT_VALIDATE_PLACEMENT);
     }
 
     this.scripts = scripts;
-
-    this.listeners = listeners || null;
+    this.listeners = listeners;
     this.methods = Object.keys(methods);
 
     window.addEventListener('message', this.receiveEvent.bind(this));
 
-    this.methods &&
-      this.methods.forEach((command: string) => {
-        if (command === RESERVED_READY_COMMAND) {
-          console.error(ERROR_MESSAGES.CANT_USE_READY_COMMAND);
-          return;
-        }
+    this.methods.forEach((command: string) => {
+      if (command === RESERVED_READY_COMMAND) {
+        console.error(ERROR_MESSAGES.CANT_USE_READY_COMMAND);
+        return;
+      }
 
-        const event = this.eventEmitter.on(
-          command,
-          methods[command] as SubscriberCallback
-        );
+      const event = this.eventEmitter.on(
+        command,
+        methods[command] as SubscriberCallback,
+      );
 
-        this.events.push(event);
-      });
+      this.events.push(event);
+    });
 
     this.send(RESERVED_READY_COMMAND, undefined);
   }
 
-  receiveEvent(event: MessageEvent): void {
-    // Check origin
-    // Because of browser's security restrictions, we need to know
-    // the remote host of wallpapers, and specify this value
-    // when the message is sent.
+  /**
+   *
+   * Receives an event
+   *
+   * @private
+   * @param {MessageEvent} event
+   * @returns {void}}
+   * @memberof ParentFrame
+   */
+  private receiveEvent(event: MessageEvent): void {
+    // Verify the origin
     if (this.creativeUrl.origin !== event.origin) return;
 
     try {
       const { command, payload, placement } = this.parseMessage(event);
 
-      // Check placement
       // Only process events coming from the placement embedded doc
       if (this.placement !== placement) return;
 
       this.eventEmitter.emit(command, payload);
     } catch (error) {
-      console.error(error);
+      console.error('Error processing event:', error);
     }
   }
 
+  /**
+   *
+   * Parses a message
+   * @param {MessageEvent} event
+   * @return {*}  {{
+   *     command: string;
+   *     payload: unknown;
+   *     placement: string;
+   *   }}
+   * @memberof ParentFrame
+   */
   parseMessage(event: MessageEvent): {
     command: string;
     payload: unknown;
     placement: string;
   } {
-    return {
-      command: event.data.command,
-      payload: event.data.payload,
-      placement: event.data.placement,
-    };
+    const { command, payload, placement } = event.data;
+    if (!command || !placement) {
+      throw new Error(ERROR_MESSAGES.INVALID_MESSAGE_FORMAT);
+    }
+    return { command, payload, placement };
   }
 
+  /**
+   *
+   * Builds a payload
+   *
+   * @param {string} command
+   * @param {unknown} payload
+   * @return {*}  {(FrameEvent | InitialFrameEvent)}
+   * @memberof ParentFrame
+   */
   buildEventPayload(
     command: string,
-    payload: unknown
+    payload: unknown,
   ): FrameEvent | InitialFrameEvent {
-    const res = {} as InitialFrameEvent;
-
-    if (command === RESERVED_READY_COMMAND) {
-      res.availableListeners = this.listeners;
-      res.availableMethods = this.methods;
-      res.scripts = this.scripts;
-    }
-
-    return {
-      ...res,
+    const result: InitialFrameEvent = {
       command,
       payload,
       placement: this.placement,
+      availableListeners: null,
+      availableMethods: null,
+      scripts: this.scripts,
     };
+
+    if (command === RESERVED_READY_COMMAND) {
+      result.availableListeners = this.listeners;
+      result.availableMethods = this.methods;
+    }
+
+    return result;
   }
 
-  send(command: string, event: unknown): void {
+  /**
+   *
+   * Sends an event to the child frame
+   * @param {string} command
+   * @param {unknown} event
+   * @returns {void}}
+   * @memberof ParentFrame
+   */
+  public send(command: string, event: unknown): void {
     if (
       this.listeners &&
       !this.listeners.includes(command) &&
@@ -152,13 +244,19 @@ export default class ParentFrame {
       const payload = this.buildEventPayload(command, event);
       this.child.contentWindow.postMessage(payload, creativeOrigin);
     } catch (error) {
-      console.error(error);
+      console.error('Error sending message:', error);
     }
   }
 
-  destroy(): void {
+  /**
+   *
+   * Destroys the parent frame
+   *
+   * @memberof ParentFrame
+   */
+  public destroy(): void {
     window.removeEventListener('message', this.receiveEvent.bind(this));
-    this.events.forEach((event: any) => {
+    this.events.forEach((event: EventSubscription) => {
       event.off();
     });
   }

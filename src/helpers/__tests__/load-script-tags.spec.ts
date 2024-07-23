@@ -1,9 +1,9 @@
 import { loadScriptTags } from '../load-script-tags';
 
 describe('loadScriptTags method', () => {
-  const mockTag = '<script src="https://moat.com/script.js"></script>';
+  const mockTag = '<script src="https://example.com/script.js"></script>';
   const mockTagWithAttributes =
-    '<script src="https://moat.com/script-with-attr.js" aria-title="MOAT Analytics"></script>';
+    '<script src="https://example.com/script-with-attr.js" aria-title="Example Analytics"></script>';
   const createElementSpy = jest.spyOn(document, 'createElement');
   const querySelectorSpy = jest.spyOn(document, 'querySelector');
 
@@ -22,7 +22,7 @@ describe('loadScriptTags method', () => {
     expect(createElementSpy).not.toHaveBeenCalled();
   });
 
-  it('should do nothing if for some crazy af reason the document has no head element', () => {
+  it('should do nothing if the document has no head element', () => {
     querySelectorSpy.mockImplementationOnce(() => null);
 
     loadScriptTags([mockTag]);
@@ -36,7 +36,7 @@ describe('loadScriptTags method', () => {
     const head = document.querySelector('head') as HTMLHeadElement;
     const script = head.querySelector('script') as HTMLScriptElement;
     expect(script).not.toBe(undefined);
-    expect(script.src).toBe('https://moat.com/script.js');
+    expect(script.src).toBe('https://example.com/script.js');
   });
 
   it('should keep all attributes in place', () => {
@@ -45,8 +45,8 @@ describe('loadScriptTags method', () => {
     const head = document.querySelector('head') as HTMLHeadElement;
     const script = head.querySelector('script') as HTMLScriptElement;
     expect(script).not.toBe(undefined);
-    expect(script.src).toBe('https://moat.com/script-with-attr.js');
-    expect(script.getAttribute('aria-title')).toBe('MOAT Analytics');
+    expect(script.src).toBe('https://example.com/script-with-attr.js');
+    expect(script.getAttribute('aria-title')).toBe('Example Analytics');
   });
 
   it('should clone inline content as well', () => {
@@ -65,13 +65,13 @@ describe('loadScriptTags method', () => {
     const scripts = head.querySelectorAll('script') as NodeList;
     expect(scripts).not.toBe(undefined);
     expect((scripts[0] as HTMLIFrameElement).src).toBe(
-      'https://moat.com/script.js'
+      'https://example.com/script.js',
     );
     expect((scripts[1] as HTMLIFrameElement).src).toBe(
-      'https://moat.com/script-with-attr.js'
+      'https://example.com/script-with-attr.js',
     );
     expect((scripts[1] as HTMLIFrameElement).getAttribute('aria-title')).toBe(
-      'MOAT Analytics'
+      'Example Analytics',
     );
   });
 });

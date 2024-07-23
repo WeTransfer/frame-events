@@ -1,16 +1,12 @@
-# frame-events-api
+# 🔗 Frame Events ![Coverage](https://github.com/WeTransfer/frame-events/wiki/coverage.svg)[![Publish](https://github.com/WeTransfer/frame-events/actions/workflows/pusblish.yml/badge.svg)](https://github.com/WeTransfer/frame-events/actions/workflows/publish.yml)
 
-Frame Events API is a library for establishing secure parent and child 2-way communication when working with iframes and the `window.postMessage` method.
+Frame Events is a library for establishing secure parent and child 2-way communication when working with iframes and the `window.postMessage` method.
 
 ## How it works
 
-The library consists in two classes, `ParentFrame`, to be instantiated in the parent document and `ChildFrame`, to be run in the embedded document. They both make use of the `Window.postMessage()` method and the `onmessage` event handler.
-
-[Receiver and emitter diagram](./docs/event_flow.drawio)
+The library consists of two classes, `ParentFrame`, to be instantiated in the parent document and `ChildFrame`, to be run in the embedded document. They both make use of the `Window.postMessage()` method and the `onmessage` event handler.
 
 When a ParentFrame instance defines an interface it sends a ready event to the ChildFrame instance in the embedded document. When the ChildFrame instance receives the ready event it runs the subscriber callback.
-
-[Subscriber callback diagram](./docs/subscriber_callback.drawio)
 
 ## Using ParentFrame
 
@@ -126,11 +122,13 @@ const myChildAPI = new ChildFrame(function (data) {
 ## Build
 
 ```
-  nx build frame-events-api --prod
+  yarn build
 ```
-
-This library was generated with [Nx](https://nx.dev).
 
 ## Running unit tests
 
-Run `nx test frame-events-api` to execute the unit tests via [Jest](https://jestjs.io).
+Run `yarn test` to execute the unit tests via [Jest](https://jestjs.io).
+
+## Running unit tests with coverage
+
+Run `yarn test:coverage` to execute the unit tests with coverage via [Jest](https://jestjs.io).

@@ -1,54 +1,69 @@
+import { InitialFrameEvent } from 'src/types';
 import ChildFrame from '../ChildFrame';
+import ERROR_MESSAGES from '../constants/error-messages';
 import Events from '../helpers/event-emitter';
 import { loadScriptTags } from '../helpers/load-script-tags';
-import { InitialFrameEvent } from '../ParentFrame';
 
 jest.mock('../helpers/event-emitter');
 jest.mock('../helpers/load-script-tags');
 
-describe('ChildFrame class', () => {
-  describe('construct class', () => {
+describe('ChildFrame', () => {
+  const originalLocation = window.location;
+
+  describe('construct', () => {
     afterAll(() => {
       jest.restoreAllMocks();
     });
 
-    it('should throw an error if no origin is present is the URL', () => {
-      // @ts-ignore
-      delete window.location;
-      window.location = {
+    it('should throw an error if no origin is present in the URL', () => {
+      const mockLocation = {
+        ...originalLocation,
         search: '?_placement=myParentPlacement',
-      } as Location;
+      };
+
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: mockLocation,
+      });
 
       expect(() => {
-        new ChildFrame(jest.fn);
-      }).toThrowError(
-        `Can't validate origin! please add ?_origin=PARENT_HOST to the iframe source`
-      );
+        new ChildFrame(jest.fn());
+      }).toThrow(ERROR_MESSAGES.CANT_VALIDATE_ORIGIN);
     });
 
     it('should throw an error if no placement is present is the URL', () => {
-      // @ts-ignore
-      delete window.location;
-      window.location = {
+      const mockLocation = {
+        ...originalLocation,
         search: '?_origin=http://parent:1',
-      } as Location;
+      };
+
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: mockLocation,
+      });
 
       expect(() => {
         new ChildFrame(jest.fn);
-      }).toThrowError(
-        `Can't validate placement! please add ?_placement=PLACEMENT_NAME to the iframe source`
-      );
+      }).toThrow(ERROR_MESSAGES.CANT_VALIDATE_PLACEMENT);
     });
 
     it('should get the parent origin from the URL', () => {
-      // @ts-ignore
-      delete window.location;
-      window.location = {
+      const mockLocation = {
+        ...originalLocation,
         search: '?_origin=http://parent:1&_placement=myParentPlacement',
-      } as Location;
-      const marco = new ChildFrame(jest.fn);
+      };
 
-      expect(marco.endpoint).toBe('http://parent:1');
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: mockLocation,
+      });
+
+      const childFrame = new ChildFrame(jest.fn);
+
+      expect(childFrame.endpoint).toBe('http://parent:1');
     });
 
     it('should start listening for message events', () => {
@@ -58,14 +73,14 @@ describe('ChildFrame class', () => {
       expect(window.addEventListener).toHaveBeenCalledTimes(1);
       expect(window.addEventListener).toHaveBeenCalledWith(
         'message',
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
     it('should define a parent placement', () => {
-      const marco = new ChildFrame(jest.fn);
+      const childFrame = new ChildFrame(jest.fn);
 
-      expect(marco.parentPlacement).toBe('myParentPlacement');
+      expect(childFrame.parentPlacement).toBe('myParentPlacement');
     });
   });
 
@@ -113,7 +128,10 @@ describe('ChildFrame class', () => {
       global.dispatchEvent(event);
 
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(new Error('Parsing error'));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error processing event:',
+        new Error('Parsing error'),
+      );
     });
 
     it('should not emit an internal event if the message comes from a different placement', () => {
@@ -126,7 +144,7 @@ describe('ChildFrame class', () => {
       jest.spyOn(event, 'origin', 'get').mockReturnValueOnce('http://parent:1');
       global.dispatchEvent(event);
 
-      expect(emitEventSpy).not.toBeCalled();
+      expect(emitEventSpy).not.toHaveBeenCalled();
     });
 
     it('should emit an internal event', () => {
@@ -150,21 +168,27 @@ describe('ChildFrame class', () => {
       jest.spyOn(event, 'data', 'get').mockReturnValueOnce('event:data');
       global.dispatchEvent(event);
 
-      expect(onParentReadyMock).toBeCalledWith('event:data');
+      expect(onParentReadyMock).toHaveBeenCalledWith('event:data');
     });
   });
 
   describe('parseMessage method', () => {
-    let marco: InstanceType<typeof ChildFrame>;
+    let childFrame: InstanceType<typeof ChildFrame>;
     let event: MessageEvent;
 
     beforeAll(() => {
-      // @ts-ignore
-      delete window.location;
-      window.location = {
+      const mockLocation = {
+        ...originalLocation,
         search: '?_origin=http://parent:1&_placement=myParentPlacement',
-      } as Location;
-      marco = new ChildFrame(jest.fn);
+      };
+
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: mockLocation,
+      });
+
+      childFrame = new ChildFrame(jest.fn);
       event = new MessageEvent('message');
       jest.spyOn(event, 'data', 'get').mockReturnValue({
         command: 'ready',
@@ -178,36 +202,52 @@ describe('ChildFrame class', () => {
     });
 
     it('should parse the message', async () => {
-      const { payload, command, parentPlacement } = marco.parseMessage(event);
+      const { payload, command, parentPlacement } =
+        childFrame.parseMessage(event);
 
       expect(command).toEqual('ready');
       expect(payload).toEqual({});
       expect(parentPlacement).toEqual('myParentPlacement');
     });
+
+    it('should parse the message and return empty on default', async () => {
+      jest.spyOn(event, 'data', 'get').mockReturnValue({
+        command: '',
+        payload: {},
+        placement: '',
+      });
+
+      const { payload, command, parentPlacement } =
+        childFrame.parseMessage(event);
+
+      expect(command).toEqual('');
+      expect(payload).toMatchObject({});
+      expect(parentPlacement).toEqual('');
+    });
   });
 
   describe('onParentReady method', () => {
-    let marco: InstanceType<typeof ChildFrame>;
+    let childFrame: ChildFrame;
     const callbackMock = jest.fn();
     let payload: InitialFrameEvent;
+    let eventEmitterOnSpy: jest.SpyInstance;
+    let sendCommandSpy: jest.SpyInstance;
 
     beforeAll(() => {
-      // @ts-ignore
-      delete window.location;
-      window.location = {
-        search: '?_origin=http://parent:1&_placement=myParentPlacement',
-      } as Location;
-      marco = new ChildFrame(callbackMock);
+      childFrame = new ChildFrame(callbackMock);
       payload = {
         availableMethods: ['method1', 'method2'],
         availableListeners: ['myListener'],
         command: '',
         payload: {},
         placement: 'myParentPlacement',
-        scripts: ['<script src="https://moat.com/script.js"></script>'],
-      } as unknown as InitialFrameEvent;
+        scripts: ['<script src="https://example.com/script.js"></script>'],
+      };
 
-      marco.onParentReady(payload);
+      eventEmitterOnSpy = jest.spyOn(childFrame.eventEmitter, 'on');
+      sendCommandSpy = jest.spyOn(childFrame, 'sendCommand');
+
+      childFrame.onParentReady(payload);
     });
 
     afterAll(() => {
@@ -215,12 +255,37 @@ describe('ChildFrame class', () => {
     });
 
     it('should add available event listeners', () => {
-      expect(marco.listeners['myListener']).toBeDefined();
+      if (payload.availableListeners) {
+        // expect(eventEmitterOnSpy).toHaveBeenCalledTimes(
+        //   payload.availableListeners.length
+        // );
+        // payload.availableListeners.forEach((listener) => {
+        //   expect(eventEmitterOnSpy).toHaveBeenCalledWith(
+        //     listener,
+        //     expect.any(Function)
+        //   );
+        // });
+
+        payload.availableListeners.forEach((listener) => {
+          const callback = jest.fn();
+          childFrame.listeners[listener](callback);
+          expect(eventEmitterOnSpy).toHaveBeenCalledWith(listener, callback);
+        });
+      } else {
+        expect(eventEmitterOnSpy).not.toHaveBeenCalled();
+      }
     });
 
     it('should register available methods', () => {
-      expect(marco.run['method1']).toBeDefined();
-      expect(marco.run['method2']).toBeDefined();
+      if (payload.availableMethods) {
+        payload.availableMethods.forEach((method) => {
+          expect(childFrame.run[method]).toBeDefined();
+          childFrame.run[method]({});
+          expect(sendCommandSpy).toHaveBeenCalledWith(method, {});
+        });
+      } else {
+        expect(sendCommandSpy).not.toHaveBeenCalled();
+      }
     });
 
     it('should fire the init callback', () => {
@@ -235,17 +300,22 @@ describe('ChildFrame class', () => {
   });
 
   describe('sendCommand method', () => {
-    let marco: InstanceType<typeof ChildFrame>;
+    let childFrame: InstanceType<typeof ChildFrame>;
     const callbackMock = jest.fn();
 
     beforeAll(() => {
-      // @ts-ignore
-      delete window.location;
-      window.location = {
+      const mockLocation = {
+        ...originalLocation,
         search: '?_origin=http://parent:1&_placement=myParentPlacement',
-      } as Location;
+      };
+
+      Object.defineProperty(window, 'location', {
+        configurable: true,
+        writable: true,
+        value: mockLocation,
+      });
       window.parent.postMessage = jest.fn();
-      marco = new ChildFrame(callbackMock);
+      childFrame = new ChildFrame(callbackMock);
     });
 
     afterAll(() => {
@@ -253,7 +323,7 @@ describe('ChildFrame class', () => {
     });
 
     it('should post a message', () => {
-      marco.sendCommand('myCommand', {});
+      childFrame.sendCommand('myCommand', {});
 
       expect(window.parent.postMessage).toHaveBeenCalledTimes(1);
       expect(window.parent.postMessage).toHaveBeenCalledWith(
@@ -262,7 +332,7 @@ describe('ChildFrame class', () => {
           payload: {},
           placement: 'myParentPlacement',
         },
-        'http://parent:1'
+        'http://parent:1',
       );
     });
   });

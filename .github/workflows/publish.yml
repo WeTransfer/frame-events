@@ -1,0 +1,88 @@
+name: 'Publish Package'
+
+env:
+  WT_GITHUB_TOKEN: ${{secrets.WT_GITHUB_PACKAGES_RO}}
+  GITHUB_TOKEN: ${{secrets.WT_GITHUB_PACKAGES_RO}}
+  NPM_PUBLISH_ACCESS_TOKEN: ${{ secrets.WT_GITHUB_REPO_RO_PACKAGES_RW }}
+  WETRANSFERPLATFORM_GPG_KEYID: ${{ secrets.WETRANSFERPLATFORM_GPG_KEYID }}
+  WETRANSFERPLATFORM_GPG_KEY: ${{ secrets.WETRANSFERPLATFORM_GPG_KEY }}
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  packages: write
+  contents: write
+
+jobs:
+  linting:
+    name: Linting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js environment
+        uses: ./.github/actions/setup
+        with:
+          env: ${{ env.GITHUB_TOKEN }}
+
+      - name: Run linting
+        run: yarn lint
+
+  unit-test:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          env: ${{ env.GITHUB_TOKEN }}
+
+      - name: Run unit tests
+        run: yarn test
+
+  version:
+    name: Bump Version and Tag
+    runs-on: ubuntu-latest
+    needs: [linting, unit-test]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          env: ${{ env.GITHUB_TOKEN }}
+
+  publish:
+    name: Publish Package
+    runs-on: ubuntu-latest
+    needs: [version]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          env: ${{ env.GITHUB_TOKEN }}
+
+      - name: Build package
+        run: yarn build
+
+      - name: Determine package metadata
+        run: |
+          echo "NEW_VERSION=$(node -p -e "require('./package.json').version")" >> $GITHUB_ENV
+          echo "PACKAGE_NAME=$(node -p -e "require('./package.json').name")" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Publish package
+        run: NODE_AUTH_TOKEN="$NPM_PUBLISH_ACCESS_TOKEN" yarn publish --tag "${{ env.NEW_VERSION }}"  --access restricted
+
+      - name: Update latest tag
+        run: NODE_AUTH_TOKEN="$NPM_PUBLISH_ACCESS_TOKEN" npm dist-tag add ${{env.PACKAGE_NAME}}@${{ env.NEW_VERSION }} latest

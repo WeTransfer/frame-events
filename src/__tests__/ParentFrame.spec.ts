@@ -1,9 +1,11 @@
-import ParentFrame, { ParentFrameOptions } from '../ParentFrame';
+import { ParentFrameOptions } from 'src/types';
+import ParentFrame from '../ParentFrame';
+import ERROR_MESSAGES from '../constants/error-messages';
 import Events from '../helpers/event-emitter';
 
 jest.mock('../helpers/event-emitter');
 
-describe('ParentFrame class', () => {
+describe('ParentFrame', () => {
   it('should throw an error if the iframe element does not have a source', () => {
     expect(() => {
       const childFrameNode = document.createElement('iframe');
@@ -11,12 +13,10 @@ describe('ParentFrame class', () => {
         childFrameNode,
       };
       new ParentFrame(options);
-    }).toThrowError(
-      `Not src found. You can't run ParentFrame on an empty iframe element`
-    );
+    }).toThrow(ERROR_MESSAGES.EMPTY_IFRAME);
   });
 
-  describe('Construct class', () => {
+  describe('Construct', () => {
     const childFrameNode = document.createElement('iframe');
     childFrameNode.src =
       'http://child:1/?_origin=http://parent:2&_placement=myParentPlacement';
@@ -31,7 +31,7 @@ describe('ParentFrame class', () => {
         },
       },
       listeners: ['eventName1', 'eventName2'],
-      scripts: ['<script src="https://moat.com/script.js"></script>'],
+      scripts: ['<script src="https://example.com/script.js"></script>'],
     };
     let padre: InstanceType<typeof ParentFrame>;
     let consoleErrorSpy: jest.SpyInstance;
@@ -61,13 +61,13 @@ describe('ParentFrame class', () => {
 
     it('should expose the collection of 3rd party scripts', () => {
       expect(padre.scripts).toEqual([
-        '<script src="https://moat.com/script.js"></script>',
+        '<script src="https://example.com/script.js"></script>',
       ]);
     });
 
     it('should expose the collection of 3rd party scripts', () => {
       expect(padre.scripts).toEqual([
-        '<script src="https://moat.com/script.js"></script>',
+        '<script src="https://example.com/script.js"></script>',
       ]);
     });
 
@@ -77,7 +77,7 @@ describe('ParentFrame class', () => {
 
     it('should expose the creative source as a URL object', () => {
       expect(padre.creativeUrl).toEqual(
-        new URL('http://child:1/?_origin=http://parent:2')
+        new URL('http://child:1/?_origin=http://parent:2'),
       );
     });
 
@@ -85,12 +85,12 @@ describe('ParentFrame class', () => {
       expect(window.addEventListener).toHaveBeenCalledTimes(1);
       expect(window.addEventListener).toHaveBeenCalledWith(
         'message',
-        expect.any(Function)
+        expect.any(Function),
       );
     });
 
     it('should create event subscribers for defined methods', () => {
-      expect(onEventSpy).toBeCalledTimes(2);
+      expect(onEventSpy).toHaveBeenCalledTimes(2);
       expect((onEventSpy as jest.Mock).mock.calls).toEqual([
         ['myMethod', expect.any(Function)],
         ['myOtherMethod', expect.any(Function)],
@@ -116,9 +116,7 @@ describe('ParentFrame class', () => {
 
       expect(() => {
         new ParentFrame(options);
-      }).toThrowError(
-        `Can't validate placement! please add ?_placement=PLACEMENT_NAME to the iframe source`
-      );
+      }).toThrow(ERROR_MESSAGES.CANT_VALIDATE_PLACEMENT);
     });
 
     it('should throw a warning when registering with a reserved name method', () => {
@@ -140,7 +138,7 @@ describe('ParentFrame class', () => {
       expect(onEventSpy).not.toHaveBeenCalled();
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        `ready is a reserved command`
+        ERROR_MESSAGES.CANT_USE_READY_COMMAND,
       );
     });
   });
@@ -189,7 +187,10 @@ describe('ParentFrame class', () => {
       global.dispatchEvent(event);
 
       expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
-      expect(consoleErrorSpy).toHaveBeenCalledWith(new Error('Parsing error'));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error processing event:',
+        new Error('Parsing error'),
+      );
     });
 
     it('should not emit an internal event if the events come from a different frame/placement', () => {
@@ -241,7 +242,24 @@ describe('ParentFrame class', () => {
       jest.clearAllMocks();
     });
 
+    it('should throw an error if command or placement is not defined', () => {
+      jest.spyOn(event, 'data', 'get').mockReturnValue({
+        command: '',
+        payload: {},
+        placement: '',
+      });
+
+      expect(() => {
+        (padre as ParentFrame).parseMessage(event);
+      }).toThrow(ERROR_MESSAGES.INVALID_MESSAGE_FORMAT);
+    });
+
     it('should parse the message', () => {
+      jest.spyOn(event, 'data', 'get').mockReturnValue({
+        command: 'ready',
+        payload: {},
+        placement: 'myPlacement',
+      });
       const { payload, command, placement } = padre.parseMessage(event);
 
       expect(command).toEqual('ready');
@@ -264,7 +282,7 @@ describe('ParentFrame class', () => {
           myOtherMethod() {},
         },
         listeners: ['myListener'],
-        scripts: ['<script src="https://moat.com/script.js"></script>'],
+        scripts: ['<script src="https://example.com/script.js"></script>'],
       };
       padre = new ParentFrame(options);
     });
@@ -276,11 +294,14 @@ describe('ParentFrame class', () => {
         });
 
         expect(eP).toEqual({
+          availableListeners: null,
+          availableMethods: null,
           command: 'commandName',
           payload: {
             key: 'value',
           },
           placement: 'myParentPlacement',
+          scripts: ['<script src="https://example.com/script.js"></script>'],
         });
       });
     });
@@ -298,7 +319,7 @@ describe('ParentFrame class', () => {
           },
           availableMethods: ['myMethod', 'myOtherMethod'],
           availableListeners: ['myListener'],
-          scripts: ['<script src="https://moat.com/script.js"></script>'],
+          scripts: ['<script src="https://example.com/script.js"></script>'],
           placement: 'myParentPlacement',
         });
       });
@@ -322,7 +343,7 @@ describe('ParentFrame class', () => {
 
       buildEventPayloadMock = jest.spyOn(
         ParentFrame.prototype,
-        'buildEventPayload'
+        'buildEventPayload',
       );
       buildEventPayloadMock.mockReturnValue({
         command: 'myListener',
@@ -343,9 +364,7 @@ describe('ParentFrame class', () => {
     it('should throw if the event you are firing was not previously defined', () => {
       expect(() => {
         padre.send('unknown', {});
-      }).toThrowError(
-        `Can't send a not defined event name. Make sure you add your event name first`
-      );
+      }).toThrow(ERROR_MESSAGES.NOT_DEFINED_EVENT_NAME);
     });
 
     it('should return if no content window is defined', () => {
@@ -388,7 +407,7 @@ describe('ParentFrame class', () => {
           command: 'myListener',
           payload: {},
         },
-        'childhost'
+        'childhost',
       );
     });
 
@@ -400,7 +419,60 @@ describe('ParentFrame class', () => {
         key: 'value',
       });
 
-      expect(consoleErrorSpy).toHaveBeenCalledWith(new Error('Parsing error'));
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        'Error sending message:',
+        new Error('Parsing error'),
+      );
+    });
+  });
+
+  describe('destroy method', () => {
+    let padre: InstanceType<typeof ParentFrame>;
+    let removeEventListenerSpy: jest.SpyInstance;
+    let eventMock: { off: jest.Mock };
+
+    beforeAll(() => {
+      const childFrameNode = document.createElement('iframe');
+      childFrameNode.src =
+        'http://child:1/?_origin=http://parent:2&_placement=myParentPlacement';
+      const options: ParentFrameOptions = {
+        childFrameNode,
+        methods: {
+          myMethod() {
+            jest.fn();
+          },
+        },
+      };
+      padre = new ParentFrame(options);
+      removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
+
+      Object.defineProperty(padre, 'events', {
+        writable: true,
+        value: [],
+      });
+      eventMock = { off: jest.fn() };
+
+      padre.events.push(eventMock);
+    });
+
+    afterEach(() => {
+      jest.clearAllMocks();
+    });
+
+    it('should remove the message event listener', () => {
+      padre.destroy();
+
+      expect(removeEventListenerSpy).toHaveBeenCalledTimes(1);
+      expect(removeEventListenerSpy).toHaveBeenCalledWith(
+        'message',
+        expect.any(Function),
+      );
+    });
+
+    it('should call off on all registered events', () => {
+      padre.destroy();
+
+      expect(eventMock.off).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -1,0 +1,25 @@
+name: "Setup"
+
+inputs:
+  GITHUB_TOKEN:
+    description: "GitHub token"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        registry-url: "https://npm.pkg.github.com"
+        scope: "@wetransfer"
+        token: ${{ inputs.GITHUB_TOKEN }}
+
+    - name: Install dependencies
+      run: yarn install
+      shell: bash

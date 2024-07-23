@@ -1,7 +1,7 @@
-import { RESERVED_READY_COMMAND } from "./constants/constants";
-import ERROR_MESSAGES from "./constants/error-messages";
-import Events, { SubscriberCallback } from "./helpers/event-emitter";
-import { FrameEvent, InitialFrameEvent, ParentFrameOptions } from "./types";
+import { RESERVED_READY_COMMAND } from './constants/constants';
+import ERROR_MESSAGES from './constants/error-messages';
+import Events, { SubscriberCallback } from './helpers/event-emitter';
+import { FrameEvent, InitialFrameEvent, ParentFrameOptions } from './types';
 
 /**
  * ParentFrame is responsible for sending events to the child frame
@@ -107,7 +107,7 @@ export default class ParentFrame {
 
     // A placement name must be defined in the embedded document source
     const urlParams = new URLSearchParams(this.child.src);
-    this.placement = urlParams.get("_placement") || "";
+    this.placement = urlParams.get('_placement') || '';
     if (!this.placement) {
       throw new Error(ERROR_MESSAGES.CANT_VALIDATE_PLACEMENT);
     }
@@ -116,7 +116,7 @@ export default class ParentFrame {
     this.listeners = listeners;
     this.methods = Object.keys(methods);
 
-    window.addEventListener("message", this.receiveEvent.bind(this));
+    window.addEventListener('message', this.receiveEvent.bind(this));
 
     this.methods.forEach((command: string) => {
       if (command === RESERVED_READY_COMMAND) {
@@ -156,7 +156,7 @@ export default class ParentFrame {
 
       this.eventEmitter.emit(command, payload);
     } catch (error) {
-      console.error("Error processing event:", error);
+      console.error('Error processing event:', error);
     }
   }
 
@@ -239,7 +239,7 @@ export default class ParentFrame {
       const payload = this.buildEventPayload(command, event);
       this.child.contentWindow.postMessage(payload, creativeOrigin);
     } catch (error) {
-      console.error("Error sending message:", error);
+      console.error('Error sending message:', error);
     }
   }
 
@@ -250,7 +250,7 @@ export default class ParentFrame {
    * @memberof ParentFrame
    */
   public destroy(): void {
-    window.removeEventListener("message", this.receiveEvent.bind(this));
+    window.removeEventListener('message', this.receiveEvent.bind(this));
     this.events.forEach((event: any) => {
       event.off();
     });

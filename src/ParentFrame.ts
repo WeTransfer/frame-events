@@ -141,7 +141,7 @@ export default class ParentFrame {
    *
    * @private
    * @param {MessageEvent} event
-   * @return {*}  {void}
+   * @returns {void}}
    * @memberof ParentFrame
    */
   private receiveEvent(event: MessageEvent): void {
@@ -218,7 +218,7 @@ export default class ParentFrame {
    * Sends an event to the child frame
    * @param {string} command
    * @param {unknown} event
-   * @return {*}  {void}
+   * @returns {void}}
    * @memberof ParentFrame
    */
   public send(command: string, event: unknown): void {

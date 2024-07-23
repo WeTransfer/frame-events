@@ -94,7 +94,7 @@ export default class ChildFrame {
    * Handles receiving messages from the parent frame.
    *
    * @param {MessageEvent} event
-   * @return {*}  {void}
+   * @returns {void}
    * @memberof ChildFrame
    */
   receiveEvent(event: MessageEvent): void {
@@ -122,7 +122,7 @@ export default class ChildFrame {
    * Parses a message from the parent frame.
    *
    * @param {MessageEvent} event
-   * @return {*}  {{
+   * @return  {{
    *     command: string;
    *     payload: unknown;
    *     parentPlacement: string;

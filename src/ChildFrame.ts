@@ -1,8 +1,8 @@
-import ERROR_MESSAGES from "./constants/error-messages";
-import Events, { SubscriberCallback } from "./helpers/event-emitter";
-import { loadScriptTags } from "./helpers/load-script-tags";
-import { InitialFrameEvent } from "./types";
-import { RESERVED_READY_COMMAND } from "./constants/constants";
+import ERROR_MESSAGES from './constants/error-messages';
+import Events, { SubscriberCallback } from './helpers/event-emitter';
+import { loadScriptTags } from './helpers/load-script-tags';
+import { InitialFrameEvent } from './types';
+import { RESERVED_READY_COMMAND } from './constants/constants';
 
 /**
  * A class for handling communication between the parent and child frames.
@@ -66,13 +66,13 @@ export default class ChildFrame {
   constructor(initCallback: SubscriberCallback) {
     // Register endpoint
     const urlParams = new URLSearchParams(window.location.search);
-    this.endpoint = urlParams.get("_origin");
+    this.endpoint = urlParams.get('_origin');
     if (!this.endpoint) {
       throw new Error(ERROR_MESSAGES.CANT_VALIDATE_ORIGIN);
     }
 
     // Get parent placement from location
-    this.parentPlacement = urlParams.get("_placement");
+    this.parentPlacement = urlParams.get('_placement');
     if (!this.parentPlacement) {
       throw new Error(ERROR_MESSAGES.CANT_VALIDATE_PLACEMENT);
     }
@@ -87,7 +87,7 @@ export default class ChildFrame {
     this.listeners = {};
     this.run = {};
 
-    window.addEventListener("message", this.receiveEvent.bind(this));
+    window.addEventListener('message', this.receiveEvent.bind(this));
   }
 
   /**
@@ -114,7 +114,7 @@ export default class ChildFrame {
         this.eventEmitter.emit(command, payload);
       }
     } catch (error) {
-      console.error("Error processing event:", error);
+      console.error('Error processing event:', error);
     }
   }
 
@@ -135,9 +135,9 @@ export default class ChildFrame {
     parentPlacement: string;
   } {
     return {
-      command: event.data.command || "",
+      command: event.data.command || '',
       payload: event.data.payload || {},
-      parentPlacement: event.data.placement || "",
+      parentPlacement: event.data.placement || '',
     };
   }
 

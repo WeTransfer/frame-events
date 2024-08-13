@@ -5,9 +5,16 @@
 <h1>Parent Frame</h1>
 <p>Counter: <span id="counter">0</span></p>
 
-<iframe id="childFrame" src="./ChildFrame.html?_origin=localhost:3030&_placement=TEST" width="500" height="500"></iframe>
+<div>
+    <button id="sendParentEvent">Send Event From Parent</button>
+</div>
 
 <script type="text/javascript" src="/parent.js"></script>
-
+<style>
+    body { font-family: Helvetica, sans-serif; }
+    button { border: none; border-radius: 5px; background: black; color: white; padding: 12px; margin: 0 0 16px 0;}
+    #counter { font-weight: 900; color: green; }
+    iframe { border: 1px solid #ccc; }
+</style>
 </body>
 </html>

@@ -26,9 +26,21 @@ Events are sent two way, parent frame to child frame and child frame to parent f
 ![Event Flow](./docs/images/event_flow.svg "Event FLow Diagram")
 Parent document
 
-## Example
+## Example Project
 
-In the main document:
+An example is included in the project in the `/example` folder. Run the following command to see it in action:
+
+```bash
+  yarn start:demo
+```
+
+Go to `http://localhost:3030` to see the demo app.
+
+![Example](./docs/images/example.png "Example")
+
+## Example Code
+
+In the parent document:
 
 ```typescript
 const state = {
@@ -38,7 +50,7 @@ const myAPI = new ParentFrame({
   child: document.querySelector("iframe"),
   methods: {
     updateCounter: function () {
-      state.counter = state.counter++;
+      state.counter++;
       this.send("counterUpdated", {
         counter: state.counter,
       });

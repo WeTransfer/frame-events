@@ -10,16 +10,16 @@ new ParentFrame(options);
 
 ### Options
 
-| Name      | Type                |            |
-| --------- | ------------------- | ---------- |
-| child     | `HTMLIFrameElement` | `required` |
-| methods   | `object`            |            |
-| listeners | `string[]`          |            |
-| scripts   | `string[]`          |            |
+| Name               | Type                |            |
+| ------------------ | ------------------- | ---------- |
+| childFrameNode     | `HTMLIFrameElement` | `required` |
+| methods            | `object`            |            |
+| listeners          | `string[]`          |            |
+| scripts            | `string[]`          |            |
 
-#### child
+#### childFrameNode
 
-A child is a `HTMLIFrameElement` that is embedding a document with a ChildFrame instance into the parent document. This iframe must be attached to the DOM and ready to receive events.
+A childFrameNode is a `HTMLIFrameElement` that is embedding a document with a ChildFrame instance into the parent document. This iframe must be attached to the DOM and ready to receive events.
 
 When building your iframe source you must specify the parent origin in order to establish a secure connection.
 

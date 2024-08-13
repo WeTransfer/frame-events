@@ -26,7 +26,8 @@
     "lint:fix": "eslint src/**/*.ts --fix",
     "version:patch": "yarn version --patch",
     "version:minor": "yarn version --minor",
-    "version:major": "yarn version --major"
+    "version:major": "yarn version --major",
+    "start:demo": "yarn build && yarn webpack-dev-server --config ./example/webpack.config.js"
   },
   "lint-staged": {
     "**/*.ts": [
@@ -59,6 +60,7 @@
     "tslib": "^2.6.3",
     "typescript": "^5.5.3",
     "webpack": "^5.93.0",
+    "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"
   },
   "dependencies": {},

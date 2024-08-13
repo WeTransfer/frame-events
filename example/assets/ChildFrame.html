@@ -3,7 +3,16 @@
 <body>
 <h1>Child Frame</h1>
 
-<button>Increment counter</button>
+<button>Increment counter on parent frame</button>
+
+<h3>Messages received from parent frame:</h3>
+<ul id="messages"></ul>
+
 <script type="module" src="/child.js"></script>
+<style>
+    body { font-family: Helvetica, sans-serif; }
+    button { border: none; border-radius: 5px; background: black; color: white; padding: 12px; margin: 0 0 16px 0;}
+    #counter { font-weight: 900; color: green; }
+</style>
 </body>
 </html>

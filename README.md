@@ -89,4 +89,4 @@ const myChildAPI = new ChildFrame(function (data) {
 # License
 Created by WeTransfer.
 
-Frame Events is MIT licensed.
+Frame Events is licensed using the The Hippocratic License see [LICENSE.md](./LICENSE.md).

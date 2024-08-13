@@ -2,7 +2,8 @@
   "name": "@wetransfer/frame-events",
   "version": "0.0.7",
   "type": "commonjs",
-  "license": "MIT",
+  "license": "Hippocratic",
+  "description": "A communication layer library for sending bi-lateral data events between the DOM and its iframe(s)." ,
   "engines": {
     "node": "20"
   },

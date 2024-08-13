@@ -63,9 +63,9 @@ An array of html script tags that you want to ad to the embedded document head.
 
 | Name                                                      | Description                                                                       | 
 | --------------------------------------------------------- | --------------------------------------------------------------------------------- | 
-| **parseMessage(event: MessageEvent)**                     | Takes in an event and returns parsed message with comman, payload and placement   |
-| **buildEventPayload(command: String, payload: unknown)**  | Builds an event payload in the correct format with Frame Events configuration.    | 
-| **send(command: String, event: unknown)**                 | Sends an event between frames using `postMessage`.                                | 
+| **parseMessage(event: MessageEvent)**                     | Takes in an event and returns parsed message with command, payload and placement   |
+| **buildEventPayload(command: string, payload: unknown)**  | Builds an event payload in the correct format with Frame Events configuration.    | 
+| **send(command: string, event: unknown)**                 | Sends an event between frames using `postMessage`.                                | 
 | **destroy()**:                                            | Destroys the instance and turns off listeners for all events.                     | 
 
 ## Using ChildFrame
@@ -104,7 +104,7 @@ A function that will execute when the ChildFrame instance gets the ready signal 
 | **receiveEvent(event: MessageEvent)**                 | A handler to receive messages from the parent frame and process it.   |
 | **parseMessage(event: MessageEvent)**                 | Parses a message received from the parent frame.                      |
 | **onParentReady(payload: InitialFrameEvent)**         | Handler when parent sends a `ready` event.                            | 
-| **sendCommand(command: String, payload: unknown)**    | Method to send commands to the parent frame.                          | 
+| **sendCommand(command: string, payload: unknown)**    | Method to send commands to the parent frame.                          | 
 
 ## Build
 
